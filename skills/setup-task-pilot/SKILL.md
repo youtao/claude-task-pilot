@@ -1,7 +1,7 @@
 ---
 name: setup-task-pilot
 description: This skill should be used when the user asks to "initialize task management", "setup project structure", "fix project structure", "repair project files", "create project documentation", or "prepare project for task tracking". Provides intelligent project initialization for Claude Task Pilot with smart file detection and interactive confirmation.
-version: 1.0.0
+version: 1.2.0
 ---
 
 # Claude Task Pilot Project Initialization Skill
