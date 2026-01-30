@@ -1,19 +1,21 @@
 # Claude Task Pilot
 
-**AI-driven task management plugin for Claude Code**
+**AI 驱动的 Claude Code 任务管理插件**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-purple.svg)](https://github.com/anthropics/claude-code)
+[![版本](https://img.shields.io/badge/版本-1.0.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
-## 🎯 Why Claude Task Pilot?
+## 🎯 为什么选择 Claude Task Pilot？
 
-Claude Task Pilot is an AI-native task management system designed specifically for Claude Code workflows. Unlike traditional task management tools, it:
+Claude Task Pilot 是专为 Claude Code 工作流设计的 AI 原生任务管理系统。与传统任务管理工具不同，它具有以下特点：
 
-- **Thinks like AI**: Document structure optimized for LLM understanding
-- **Works automatically**: Zero manual tracking through smart hooks
-- **Recommends intelligently**: Priority-based, dependency-aware task suggestions
-- **Starts fast**: Project state in 5-10 seconds
+- **AI 思维模式**: 文档结构专为 LLM 理解优化
+- **自动工作**: 通过智能 Hooks 零手动追踪
+- **智能推荐**: 基于优先级和依赖关系的任务建议
+- **快速启动**: 5-10 秒了解项目状态
+
+---
 
 ## 🎯 核心功能
 
@@ -31,6 +33,8 @@ Claude Task Pilot is an AI-native task management system designed specifically f
 - **任务推荐**: 基于优先级和依赖关系推荐下一个任务
 - **日报生成**: 自动生成每日进度报告
 
+---
+
 ## 📁 文档结构
 
 ```
@@ -47,31 +51,33 @@ docs/
         └── task-XXX-*.md
 ```
 
+---
+
 ## 🚀 快速开始
 
 ### 安装
 
 ```bash
-# Clone to plugin directory
+# 克隆到插件目录
 cd ~/.claude/plugins
-git clone https://github.com/your-username/claude-task-pilot.git
+git clone https://github.com/youtao/claude-task-pilot.git
 
-# Or manually copy
+# 或手动复制
 cp -r claude-task-pilot ~/.claude/plugins/
 ```
 
 ### 1 分钟演示
 
 ```bash
-# Create test project
+# 创建测试项目
 mkdir ~/test-project && cd ~/test-project
 
-# Start Claude Code
+# 启动 Claude Code
 claude-code
 
-# Plugin will prompt for initialization, select "Yes"
+# 插件会提示初始化，选择"是"
 
-# Create first task
+# 创建第一个任务
 cat > docs/todo/backlog/task-001-hello-world.md << 'EOF'
 # task-001: Hello World
 
@@ -86,13 +92,13 @@ cat > docs/todo/backlog/task-001-hello-world.md << 'EOF'
 - [ ] 插件正常工作
 EOF
 
-# Check if session.md is automatically updated
+# 检查 session.md 是否自动更新
 cat docs/session.md
 ```
 
 ### 初始化项目
 
-新项目首次启动时，Plugin 会自动提示初始化：
+新项目首次启动时，插件会自动提示初始化：
 
 ```markdown
 ## 🚀 检测到新项目
@@ -146,6 +152,8 @@ mv docs/todo/backlog/task-003.md docs/done/2026-01/
 - ✅ 更新 `archive-index.md`
 - ✅ 智能推荐下一个任务
 
+---
+
 ## 🔧 配置
 
 ### 项目级配置
@@ -164,6 +172,8 @@ daily_report: true
 ### 全局配置
 
 编辑 `~/.claude/plugins/claude-task-pilot/.claude/claude-task-pilot.local.md`
+
+---
 
 ## 📖 使用指南
 
@@ -187,6 +197,8 @@ daily_report: true
 → 调用: daily-reporter agent
 ```
 
+---
+
 ## 🏗️ 架构
 
 ### Hooks
@@ -208,6 +220,8 @@ daily_report: true
 - `archive-index.md`: 归档索引模板
 - `task-complete.md`: 完成报告模板
 
+---
+
 ## 🎨 设计原则
 
 1. **AI 优先**: 文档结构化、高信息密度
@@ -216,22 +230,24 @@ daily_report: true
 4. **完整追溯**: 任务生命周期记录完整
 5. **非侵入式**: Hooks 观察，不干扰用户操作
 
+---
+
 ## 🔧 故障排查
 
 ### session.md 损坏
 
 ```bash
-# Delete corrupted file
+# 删除损坏的文件
 rm docs/session.md
 
-# Restart Claude Code, auto-rebuild
+# 重启 Claude Code，自动重建
 claude-code
 ```
 
 ### 归档索引损坏
 
 ```bash
-# Rebuild from template
+# 从模板重建
 cp ~/.claude/plugins/claude-task-pilot/templates/archive-index.md \
    docs/done/archive-index.md
 ```
@@ -239,10 +255,10 @@ cp ~/.claude/plugins/claude-task-pilot/templates/archive-index.md \
 ### Hook 未触发
 
 ```bash
-# Check plugin directory
+# 检查插件目录
 ls ~/.claude/plugins/claude-task-pilot
 
-# Check plugin.json syntax
+# 检查 plugin.json 语法
 cat ~/.claude/plugins/claude-task-pilot/.claude-plugin/plugin.json | jq
 ```
 
@@ -251,6 +267,8 @@ cat ~/.claude/plugins/claude-task-pilot/.claude-plugin/plugin.json | jq
 - 检查 Agent 文件是否存在
 - 检查 `plugin.json` 中的 agent 声明
 - 查看 Claude Code 日志
+
+---
 
 ## 🧪 测试
 
@@ -279,6 +297,8 @@ claude-code
 - [ ] 智能推荐功能正常
 - [ ] session.md 行数限制生效
 
+---
+
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
@@ -288,12 +308,22 @@ claude-code
 1. Fork 本仓库
 2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
 3. 提交更改 (`git commit -m 'Add amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
+4. 推送到分支 (`git push origin feature-amazing-feature`)
 5. 开启 Pull Request
 
-## 📄 License
+---
+
+## 📄 许可证
 
 MIT License - 详见 [LICENSE](LICENSE) 文件
+
+---
+
+## 🔗 相关链接
+
+- **GitHub 仓库**: https://github.com/youtao/claude-task-pilot
+- **问题反馈**: https://github.com/youtao/claude-task-pilot/issues
+- **发布历史**: https://github.com/youtao/claude-task-pilot/releases
 
 ---
 
