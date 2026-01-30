@@ -1,0 +1,79 @@
+# Claude Code local settings
+.claude/settings.local.json
+.claude/*.local.md
+
+# User-specific configuration
+*.local.*
+!.claude-plugin/plugin.json
+
+# Development documents (optional)
+# AUDIT_REPORT.md          # 取消注释以忽略审查报告
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.cache
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
+
+# Node modules (if any tests require Node.js)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Documentation build
+*.aux
+*.toc
+*.out
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Debug files
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
