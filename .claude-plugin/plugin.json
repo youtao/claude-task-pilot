@@ -1,6 +1,6 @@
 {
   "name": "claude-task-pilot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "AI-driven task management plugin for Claude Code with automatic tracking and intelligent recommendations",
   "author": {
     "name": "youtao"
