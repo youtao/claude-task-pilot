@@ -57,13 +57,22 @@ docs/
 
 ### 安装
 
+#### 方式 1: Marketplace 安装（推荐）
+
+```bash
+# 添加 marketplace
+/plugin marketplace add https://github.com/youtao/claude-task-pilot.git
+
+# 安装插件
+/plugin install claude-task-pilot@claude-task-pilot
+```
+
+#### 方式 2: 直接克隆
+
 ```bash
 # 克隆到插件目录
 cd ~/.claude/plugins
 git clone https://github.com/youtao/claude-task-pilot.git
-
-# 或手动复制
-cp -r claude-task-pilot ~/.claude/plugins/
 ```
 
 ### 1 分钟演示

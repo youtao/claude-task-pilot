@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-task-pilot",
+  "version": "1.0.0",
+  "description": "AI-driven task management plugin for Claude Code with automatic tracking and intelligent recommendations",
+  "owner": {
+    "name": "youtao"
+  },
+  "plugins": [
+    {
+      "name": "claude-task-pilot",
+      "description": "AI-driven task management plugin with automatic tracking and intelligent recommendations",
+      "version": "1.0.0",
+      "author": {
+        "name": "youtao"
+      },
+      "source": "./",
+      "category": "productivity",
+      "keywords": ["task-management", "ai", "automation", "productivity", "tracking"],
+      "repository": "https://github.com/youtao/claude-task-pilot",
+      "license": "MIT"
+    }
+  ]
+}
