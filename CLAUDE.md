@@ -304,31 +304,40 @@ description: 清理临时文件
 1. **`.claude-plugin/plugin.json`**
    ```json
    {
-     "version": "1.1.0"
+     "version": "1.2.0"
    }
    ```
 
 2. **`.claude-plugin/marketplace.json`**
    ```json
    {
-     "version": "1.1.0",
+     "version": "1.2.0",
      "plugins": [
        {
-         "version": "1.1.0"
+         "version": "1.2.0"
        }
      ]
    }
    ```
 
-3. **`README.md`** 中的版本徽章
-   ```markdown
-   [![版本](https://img.shields.io/badge/版本-1.1.0-blue.svg)]
+3. **`skills/*/SKILL.md`** (如果有 skill)
+   ```yaml
+   ---
+   name: skill-name
+   description: This skill should be used when...
+   version: 1.2.0
+   ---
    ```
 
-4. **Git Tags**
+4. **`README.md`** 中的版本徽章
+   ```markdown
+   [![版本](https://img.shields.io/badge/版本-1.2.0-blue.svg)]
+   ```
+
+5. **Git Tags**
    ```bash
-   git tag -a v1.1.0 -m "Release notes"
-   git push origin v1.1.0
+   git tag -a v1.2.0 -m "Release notes"
+   git push origin v1.2.0
    ```
 
 ### 版本发布流程
@@ -374,6 +383,7 @@ gh release create v1.1.0 --title "v1.1.0" --notes "Release notes..."
 
 - [ ] 更新 `.claude-plugin/plugin.json` 版本号
 - [ ] 更新 `.claude-plugin/marketplace.json` 版本号（两处）
+- [ ] 更新 `skills/*/SKILL.md` 版本号（如果有 skill）
 - [ ] 更新 `README.md` 版本徽章
 - [ ] 更新 `README.md` 更新日志
 - [ ] 运行所有测试场景
