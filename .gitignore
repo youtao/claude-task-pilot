@@ -6,9 +6,6 @@
 *.local.*
 !.claude-plugin/plugin.json
 
-# Development documents (optional)
-# AUDIT_REPORT.md          # 取消注释以忽略审查报告
-
 # Operating System files
 .DS_Store
 .DS_Store?
