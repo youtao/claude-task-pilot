@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.2.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.2.1-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -430,12 +430,17 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ---
 
 **最后更新**: 2026-01-30
-**版本**: v1.2.0
+**版本**: v1.2.1
 **维护者**: youtao
 
 ---
 
 ## 📜 更新日志
+
+### v1.2.1 (2026-01-30)
+
+**测试版本**：
+- 🔧 版本管理流程验证
 
 ### v1.2.0 (2026-01-30)
 
