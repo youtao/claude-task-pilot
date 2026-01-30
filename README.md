@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.0.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.1.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -24,12 +24,18 @@ Claude Task Pilot 是专为 Claude Code 工作流设计的 AI 原生任务管理
 - 自动创建符合规范的文档结构
 - 生成模板文件
 
-### 2. 任务状态追踪
+### 2. 手动初始化 Skill
+- **setup-task-pilot skill**：中途安装插件的项目的初始化工具
+- 智能判断：保护现有数据，补充缺失部分
+- 交互式确认：对可疑文件询问是否重建
+- 自动触发：当用户说"初始化任务管理"或"设置项目结构"时自动激活
+
+### 3. 任务状态追踪
 - **任务开始**: 检测新任务卡片创建，自动更新状态
 - **任务完成**: 检测任务归档，自动更新索引
 - **规范守护**: 确保 session.md 不超过 80 行
 
-### 3. 智能功能
+### 4. 智能功能
 - **任务推荐**: 基于优先级和依赖关系推荐下一个任务
 - **日报生成**: 自动生成每日进度报告
 
@@ -107,6 +113,8 @@ cat docs/session.md
 
 ### 初始化项目
 
+#### 新项目初始化
+
 新项目首次启动时，插件会自动提示初始化：
 
 ```markdown
@@ -121,6 +129,31 @@ cat docs/session.md
 - docs/done/archive-index.md
 - docs/todo/backlog/
 - docs/done/YYYY-MM/
+```
+
+#### 中途安装插件
+
+如果你是在已有项目中中途安装此插件，可以通过自然语言触发初始化：
+
+```
+帮我初始化任务管理结构
+```
+
+或
+
+```
+设置项目结构用于任务追踪
+```
+
+**智能行为**：
+- ✅ 自动创建缺失的目录和文件
+- 🤖 对于已存在但内容很少的文件（< 5 行），询问是否重新生成
+- 🔒 对于内容丰富的文件，自动跳过，保护你的数据
+- 📊 完成后显示详细的初始化报告
+
+**强制模式**：
+```
+强制初始化项目结构，跳过所有确认
 ```
 
 ### 创建任务
@@ -204,7 +237,33 @@ daily_report: true
 
 # 生成日报
 → 调用: daily-reporter agent
+
+# 初始化或修复项目结构
+说："帮我初始化任务管理" 或 "设置项目结构"
+→ setup-task-pilot skill 自动激活
+
+# 强制初始化
+说："强制初始化项目结构"
+→ 跳过所有确认直接创建
 ```
+
+#### setup-task-pilot Skill 详解
+
+**用途**：为中途安装插件的项目初始化文档结构，或修复损坏的项目结构
+
+**行为**：
+1. 检查现有目录和文件
+2. 创建缺失的部分（目录和文件）
+3. 对于已存在的文件：
+   - 内容 < 5 行 → 询问是否覆盖（可能是初始化失败）
+   - 内容 ≥ 5 行 → 跳过（保护现有内容）
+4. 完成后显示详细报告
+
+**何时使用**：
+- ✅ 刚安装插件到现有项目
+- ✅ 项目结构损坏需要修复
+- ✅ 想要补充缺失的文件
+- ❌ 不用于全新项目（会自动初始化）
 
 ---
 
@@ -220,6 +279,13 @@ daily_report: true
 
 - **task-suggester**: 智能任务推荐
 - **daily-reporter**: 日报生成
+
+### Skills
+
+- **setup-task-pilot**: 项目初始化逻辑和最佳实践
+  - 智能判断文件状态
+  - 交互式确认机制
+  - 支持强制模式
 
 ### Templates
 
@@ -243,7 +309,23 @@ daily_report: true
 
 ## 🔧 故障排查
 
-### session.md 损坏
+### 项目结构损坏或不完整
+
+**症状**：某些文件或目录丢失，插件无法正常工作
+
+**解决方案 1：使用 Skill 修复（推荐）**
+
+```
+帮我修复项目结构
+```
+
+或强制模式：
+
+```
+强制修复项目结构
+```
+
+**解决方案 2：手动重建**
 
 ```bash
 # 删除损坏的文件
@@ -251,6 +333,14 @@ rm docs/session.md
 
 # 重启 Claude Code，自动重建
 claude-code
+```
+
+**解决方案 3：从模板复制**
+
+```bash
+# 从插件模板复制
+cp ~/.claude/plugins/claude-task-pilot/templates/session.md docs/session.md
+cp ~/.claude/plugins/claude-task-pilot/templates/roadmap.md docs/todo/roadmap.md
 ```
 
 ### 归档索引损坏
@@ -300,6 +390,9 @@ claude-code
 
 **测试清单**：
 - [ ] 新项目自动初始化
+- [ ] 中途安装插件后 setup-task-pilot skill 正常触发
+- [ ] 智能判断功能：小文件询问，大文件跳过
+- [ ] 强制模式跳过所有确认
 - [ ] 任务创建后 session.md 自动更新
 - [ ] 任务完成后自动生成报告
 - [ ] 归档索引自动更新
@@ -337,4 +430,30 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ---
 
 **最后更新**: 2026-01-30
+**版本**: v1.1.0
 **维护者**: youtao
+
+---
+
+## 📜 更新日志
+
+### v1.1.0 (2026-01-30)
+
+**新增功能**：
+- ✨ 添加 setup-task-pilot skill，支持中途安装插件的项目初始化
+- 🤖 智能判断机制：根据文件内容自动决定是否重建
+- 🔒 数据保护：从不删除已有内容，只创建或经确认后覆盖
+- 📊 详细的初始化报告
+
+**改进**：
+- 📖 更新文档，添加 skill 使用说明
+- 🧪 添加测试场景和清单
+
+### v1.0.0 (2026-01-30)
+
+**初始版本**：
+- ✅ 自动初始化
+- ✅ 任务状态追踪
+- ✅ 智能任务推荐
+- ✅ 日报生成
+- ✅ 规范守护
