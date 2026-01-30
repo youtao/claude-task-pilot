@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.2.1-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.3.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -449,12 +449,24 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ---
 
 **最后更新**: 2026-01-30
-**版本**: v1.2.1
+**版本**: v1.3.0
 **维护者**: youtao
 
 ---
 
 ## 📜 更新日志
+
+### v1.3.0 (2026-01-30)
+
+**新增功能**：
+- ✨ 添加 `/setup-task-pilot` 斜杠命令，支持直接初始化
+- 🎯 支持 `auto` 和 `interactive` 两种模式
+- 📖 更新 README 文档，添加命令使用说明
+
+**命令参数**：
+- 无参数：智能模式（自动判断文件状态）
+- `auto`：自动模式（智能判断，少询问）
+- `interactive`：交互模式（详细询问每个文件）
 
 ### v1.2.1 (2026-01-30)
 
