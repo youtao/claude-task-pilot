@@ -1,33 +1,8 @@
 {
   "name": "claude-task-pilot",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "AI-driven task management plugin for Claude Code with automatic tracking and intelligent recommendations",
-  "author": "youtao",
-  "autoDiscovery": {
-    "hooks": true,
-    "agents": true
-  },
-  "capabilities": {
-    "hooks": [
-      "SessionStart",
-      "PreToolWrite",
-      "PostToolWrite"
-    ],
-    "agents": [
-      "task-suggester",
-      "daily-reporter"
-    ]
-  },
-  "settings": {
-    "docs_root": {
-      "type": "string",
-      "default": "docs",
-      "description": "文档根目录路径"
-    },
-    "session_max_lines": {
-      "type": "number",
-      "default": 80,
-      "description": "session.md 最大行数限制"
-    }
+  "author": {
+    "name": "youtao"
   }
 }
