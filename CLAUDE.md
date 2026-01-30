@@ -295,6 +295,95 @@ description: 清理临时文件
 
 ---
 
+## 📦 版本管理
+
+### 版本号同步
+
+每次发布新版本时，需要同步更新以下文件中的版本号：
+
+1. **`.claude-plugin/plugin.json`**
+   ```json
+   {
+     "version": "1.1.0"
+   }
+   ```
+
+2. **`.claude-plugin/marketplace.json`**
+   ```json
+   {
+     "version": "1.1.0",
+     "plugins": [
+       {
+         "version": "1.1.0"
+       }
+     ]
+   }
+   ```
+
+3. **`README.md`** 中的版本徽章
+   ```markdown
+   [![版本](https://img.shields.io/badge/版本-1.1.0-blue.svg)]
+   ```
+
+4. **Git Tags**
+   ```bash
+   git tag -a v1.1.0 -m "Release notes"
+   git push origin v1.1.0
+   ```
+
+### 版本发布流程
+
+完整的版本发布流程：
+
+```bash
+# 1. 更新版本号
+# 编辑 plugin.json、marketplace.json、README.md
+
+# 2. 提交更改
+git add .
+git commit -m "chore: bump version to 1.1.0"
+
+# 3. 创建 tag
+git tag -a v1.1.0 -m "Release v1.1.0"
+
+# 4. 推送代码和标签
+git push origin master
+git push origin v1.1.0
+
+# 5. 创建 GitHub Release
+gh release create v1.1.0 --title "v1.1.0" --notes "Release notes..."
+```
+
+### 版本号规范
+
+遵循 **语义化版本 (Semantic Versioning)**：
+
+- **MAJOR.MINOR.PATCH** (例如：1.1.0)
+  - **MAJOR**: 重大功能变更或破坏性更新
+  - **MINOR**: 新增功能（向后兼容）
+  - **PATCH**: Bug 修复或小改进
+
+示例：
+- `1.0.0` → `1.0.1`: 修复 bug
+- `1.0.1` → `1.1.0`: 添加新功能
+- `1.1.0` → `2.0.0`: 重大架构调整
+
+### 发布前检查清单
+
+在发布新版本前，确保：
+
+- [ ] 更新 `.claude-plugin/plugin.json` 版本号
+- [ ] 更新 `.claude-plugin/marketplace.json` 版本号（两处）
+- [ ] 更新 `README.md` 版本徽章
+- [ ] 更新 `README.md` 更新日志
+- [ ] 运行所有测试场景
+- [ ] 更新 CLAUDE.md 版本历史（如有重大变更）
+- [ ] 创建 Git tag
+- [ ] 创建 GitHub Release
+- [ ] 推送所有更改到远程仓库
+
+---
+
 ## 🧪 测试
 
 ### 手动测试场景
