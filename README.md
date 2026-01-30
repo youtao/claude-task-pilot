@@ -133,7 +133,19 @@ cat docs/session.md
 
 #### 中途安装插件
 
-如果你是在已有项目中中途安装此插件，可以通过自然语言触发初始化：
+如果你是在已有项目中中途安装此插件，有两种初始化方式：
+
+**方式 1: 使用斜杠命令（推荐）**
+
+```bash
+/setup-task-pilot
+```
+
+可选参数：
+- `auto` - 自动模式（智能判断，少询问）
+- `interactive` - 交互模式（询问每个可能覆盖的文件）
+
+**方式 2: 自然语言触发**
 
 ```
 帮我初始化任务管理结构
@@ -229,22 +241,22 @@ daily_report: true
 ### 手动命令
 
 ```markdown
-# 查看当前状态
-→ 显示: session.md 摘要
+# 初始化或修复项目结构（斜杠命令）
+/setup-task-pilot              # 智能模式（自动判断）
+/setup-task-pilot auto         # 自动模式（少询问）
+/setup-task-pilot interactive  # 交互模式（详细询问）
 
-# 推荐下一个任务
-→ 调用: task-suggester agent
-
-# 生成日报
-→ 调用: daily-reporter agent
-
-# 初始化或修复项目结构
+# 或使用自然语言触发 skill
 说："帮我初始化任务管理" 或 "设置项目结构"
 → setup-task-pilot skill 自动激活
 
-# 强制初始化
-说："强制初始化项目结构"
-→ 跳过所有确认直接创建
+# 推荐下一个任务
+说："推荐下一个任务" 或 "接下来做什么"
+→ 调用: task-suggester agent
+
+# 生成日报
+说："生成今日日报" 或 "今日进度"
+→ 调用: daily-reporter agent
 ```
 
 #### setup-task-pilot Skill 详解
@@ -279,6 +291,13 @@ daily_report: true
 
 - **task-suggester**: 智能任务推荐
 - **daily-reporter**: 日报生成
+
+### Commands
+
+- **/setup-task-pilot**: 项目初始化命令
+  - 支持自动/交互模式
+  - 智能判断文件状态
+  - 保护现有数据
 
 ### Skills
 
