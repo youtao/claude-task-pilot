@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.3.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.4.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -452,6 +452,33 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ---
 
 ## 📜 更新日志
+
+### v1.4.0 (2026-01-30)
+
+**新增功能**：
+- ✨ 初始化后询问是否导入当前计划到 session.md
+- ✨ 自动在 CLAUDE.md 中添加插件使用说明
+- 📝 创建 CLAUDE.md.template 模板文件
+
+**改进内容**：
+1. **智能计划导入**：
+   - 创建模板文件后询问用户
+   - 引导提供：当前任务、已完成工作、下一步计划、问题 blockers
+   - 将计划写入 session.md 保持连续性
+
+2. **自动配置 CLAUDE.md**：
+   - 检测并创建/更新 CLAUDE.md
+   - 添加简洁的插件使用说明
+   - 让 AI 在新 session 中了解项目使用 Claude Task Pilot
+
+3. **简化模板**：
+   - CLAUDE.md.template 只包含核心信息
+   - 明确指引 AI 查看 docs/session.md
+
+**用户体验提升**：
+- ✅ 新项目初始化后即可导入当前计划
+- ✅ AI 在后续 session 中自动了解项目背景
+- ✅ 保持任务追踪的连续性
 
 ### v1.3.0 (2026-01-30)
 
