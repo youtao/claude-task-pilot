@@ -79,6 +79,53 @@ allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion", "Glob", "Grep", "Lis
 - 目录创建失败：检查权限
 - 文件写入失败：提示错误并跳过
 
+## 完成后处理
+
+10. **询问是否导入当前计划**:
+   使用 `AskUserQuestion` 询问用户：
+   ```
+   是否将当前项目的开发计划写入 session.md？
+
+   这样可以：
+   - 记录当前正在进行的工作
+   - 让 AI 在后续 session 中了解项目背景
+   - 保持任务追踪的连续性
+   ```
+
+   选项：
+   - **是，导入计划** → 引导用户提供计划信息并写入 session.md
+   - **否，稍后手动添加** → 跳过此步骤
+
+11. **如果是，导入计划**:
+    询问用户以下信息：
+    - 当前正在进行的功能或任务
+    - 已完成的工作
+    - 下一步计划
+    - 遇到的问题或 blockers
+
+    然后更新 `docs/session.md`，在"当前任务"部分填写这些信息。
+
+12. **检查并更新 CLAUDE.md**:
+    检查项目根目录是否存在 `CLAUDE.md`：
+    - **不存在**: 创建包含 Claude Task Pilot 说明的 CLAUDE.md
+    - **存在**: 在文件顶部添加 Claude Task Pilot 使用说明
+
+    CLAUDE.md 中应包含：
+    ```markdown
+    ## 项目管理
+
+    本项目使用 **Claude Task Pilot** 插件进行任务管理和追踪。
+
+    - 任务文档位于 `docs/` 目录
+    - 当前状态: `docs/session.md`
+    - 长期规划: `docs/todo/roadmap.md`
+    - 当前冲刺: `docs/todo/current-sprint.md`
+    - 任务卡片: `docs/todo/backlog/`
+    - 已完成: `docs/done/`
+
+    **重要**: 在继续之前的开发工作时，请先查看 `docs/session.md` 了解当前进度。
+    ```
+
 ## 完成提示
 
 初始化完成后，输出：
@@ -91,10 +138,16 @@ allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion", "Glob", "Grep", "Lis
 - docs/todo/current-sprint.md
 - docs/done/archive-index.md
 
+更新：
+- CLAUDE.md（已添加 Claude Task Pilot 使用说明）
+
 下一步：
-1. 在 docs/todo/roadmap.md 中规划长期目标
-2. 在 docs/todo/current-sprint.md 中定义当前冲刺
-3. 创建任务卡片到 docs/todo/backlog/
+1. 根据对话历史，将当前计划写入 docs/session.md
+2. 在 docs/todo/roadmap.md 中规划长期目标
+3. 在 docs/todo/current-sprint.md 中定义当前冲刺
+4. 创建任务卡片到 docs/todo/backlog/
+
+💡 提示：现在可以让 AI 帮助你整理当前的开发计划并写入 session.md
 ```
 
 ---
