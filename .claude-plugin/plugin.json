@@ -1,8 +1,32 @@
 {
   "name": "claude-task-pilot",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "AI-driven task management plugin for Claude Code with automatic tracking and intelligent recommendations",
   "author": {
     "name": "youtao"
-  }
+  },
+  "agents": [
+    {
+      "name": "task-suggester",
+      "description": "智能任务推荐代理"
+    },
+    {
+      "name": "daily-reporter",
+      "description": "日报生成代理"
+    },
+    {
+      "name": "design-to-tasks",
+      "description": "设计文档转换代理"
+    }
+  ],
+  "commands": [
+    {
+      "name": "setup-task-pilot",
+      "description": "初始化项目结构"
+    },
+    {
+      "name": "convert-design-to-tasks",
+      "description": "将设计文档转换为任务卡片"
+    }
+  ]
 }

@@ -7,9 +7,10 @@ ifTool: Write|Edit|mcp__plugin_serena_serena__replace_content
 
 ## 功能描述
 
-监控文件操作，实现两大功能：
+监控文件操作，实现三大功能：
 1. **任务完成检测**: 检测任务归档操作，自动更新文档
 2. **文档规范守护**: 确保 session.md 不超过行数限制
+3. **设计文档自动转换**: 检测设计文档创建，自动生成任务卡片
 
 ---
 
@@ -275,12 +276,191 @@ if (!fileExists(`${DOCS_ROOT}/done/archive-index.md`)) {
 
 ---
 
+## 功能 3: 设计文档自动转换
+
+### 检测方式
+
+**检测逻辑**:
+```javascript
+// 检测设计文档创建
+if (filePath.match(/^docs\/plans\/\d{4}-\d{2}-\d{2}-.+-design\.md$/)) {
+  return { action: "DESIGN_DOC_CREATED", filePath }
+}
+```
+
+**触发条件**:
+- 文件路径: `docs/plans/YYYY-MM-DD-<topic>-design.md`
+- 操作: `Write` 或 `Edit` 工具创建/修改文件
+
+### 自动转换流程
+
+#### 步骤 1: 读取配置
+
+```javascript
+// 读取项目配置
+const config = readConfig('.claude/claude-task-pilot.local.md')
+
+// 检查是否启用自动转换
+if (!config.auto_convert_designs) {
+  log('ℹ️ 设计文档自动转换已禁用')
+  log('提示: 使用 /convert-design-to-tasks 手动转换')
+  return null
+}
+```
+
+#### 步骤 2: 验证设计文档
+
+```javascript
+// 检查文件是否存在
+if (!fileExists(filePath)) {
+  log('⚠️ 设计文档不存在')
+  return null
+}
+
+// 读取文件内容
+const content = readFile(filePath)
+
+// 检查内容是否有效
+if (!content || content.length < 100) {
+  log('⚠️ 设计文档内容过少，跳过自动转换')
+  return null
+}
+```
+
+#### 步骤 3: 询问用户（可选）
+
+```javascript
+// 根据配置决定是否询问
+if (config.prompt_before_convert) {
+  const basename = path.basename(filePath)
+  const shouldConvert = await askUser(
+    `检测到设计文档: ${basename}\n` +
+    `是否自动生成任务卡片？ (Y/n)`
+  )
+
+  if (!shouldConvert) {
+    log('ℹ️ 用户取消自动转换')
+    log('提示: 稍后可使用 /convert-design-to-tasks 手动转换')
+    return null
+  }
+}
+```
+
+#### 步骤 4: 调用转换 Agent
+
+```javascript
+// 调用 design-to-tasks agent
+log('📋 正在分析设计文档...')
+
+const result = await runAgent('design-to-tasks', {
+  designDoc: filePath,
+  mode: 'auto',  // 自动模式
+  verbose: false
+})
+
+if (result.success) {
+  log(`✅ 已创建 ${result.taskCount} 个任务卡片`)
+  log(`任务ID: ${result.taskIds.join(', ')}`)
+
+  // 显示简短摘要
+  if (result.summary) {
+    log('\n' + result.summary)
+  }
+} else {
+  log(`❌ 转换失败: ${result.error}`)
+  if (result.suggestion) {
+    log(`建议: ${result.suggestion}`)
+  }
+}
+```
+
+### 配置参数
+
+**`.claude/claude-task-pilot.local.md`**:
+```yaml
+---
+# 设计文档自动转换配置
+auto_convert_designs: true        # 启用自动转换（默认）
+prompt_before_convert: false      # 不询问，直接生成（默认）
+design_docs_path: "docs/plans"    # 设计文档路径
+design_docs_pattern: "^docs/plans/\\d{4}-\\d{2}-\\d{2}-.+-design\\.md$"
+
+# 任务生成配置
+default_priority: "P1"            # 默认优先级
+default_milestone: "Current Sprint"
+task_complexity_threshold: 4      # 小时数，超过则拆分任务
+---
+```
+
+### 错误处理
+
+#### E1. backlog 目录不存在
+
+```javascript
+if (!dirExists(`${DOCS_ROOT}/todo/backlog`)) {
+  log('⚠️ 任务目录未初始化')
+
+  // 自动创建
+  createDir(`${DOCS_ROOT}/todo/backlog`)
+  createDir(`${DOCS_ROOT}/todo/current-sprint.md`)
+  log('✅ 已自动创建任务目录')
+}
+```
+
+#### E2. Agent 调用失败
+
+```javascript
+if (!result.success) {
+  log(`❌ 设计文档转换失败`)
+  log(`错误: ${result.error}`)
+
+  // 提供恢复建议
+  log('\n恢复选项:')
+  log('1. 手动运行: /convert-design-to-tasks')
+  log('2. 检查设计文档格式')
+  log('3. 查看错误日志')
+
+  return null
+}
+```
+
+#### E3. 设计文档已处理
+
+```javascript
+// 检查设计文档中是否已有处理标记
+if (content.includes('<!-- TASKS_GENERATED:')) {
+  log('⚠️ 此设计文档已生成过任务卡片')
+
+  if (config.prompt_before_convert) {
+    const shouldRegenerate = await askUser('是否重新生成？ (Y/n)')
+    if (!shouldRegenerate) {
+      return null
+    }
+  }
+}
+```
+
+### 测试场景
+
+1. **自动触发**: 创建设计文档 → Hook 检测 → 询问确认 → 自动转换
+2. **配置禁用**: auto_convert_designs=false → Hook 不触发
+3. **跳过确认**: prompt_before_convert=false → 直接转换
+4. **用户取消**: 用户选择"否" → 不转换，提示手动命令
+5. **转换失败**: Agent 返回错误 → 显示错误信息和恢复建议
+
+---
+
 ## 配置参数
 
 ```yaml
 docs_root: "docs"
 session_max_lines: 80  # session.md 最大行数
 archive_threshold: 10  # 超过限制后多归档的行数
+
+# 设计文档自动转换
+auto_convert_designs: true
+prompt_before_convert: true
+design_docs_path: "docs/plans"
 ```
 
 ---
@@ -298,6 +478,12 @@ archive_threshold: 10  # 超过限制后多归档的行数
 2. **刚好达标**: session.md 正好 80 行（不触发归档）
 3. **频繁超限**: 连续多次超限（应递增归档）
 4. **空文件**: session.md 内容为空（应从模板重建）
+
+### 设计文档自动转换
+1. **自动触发**: 创建设计文档 → Hook 检测 → 自动转换
+2. **配置禁用**: auto_convert_designs=false → 不触发
+3. **用户取消**: 询问时选择"否" → 不转换
+4. **转换失败**: 显示错误和建议
 
 ---
 
@@ -324,6 +510,11 @@ async function onPostToolWrite(toolArgs) {
   // 功能 2: 文档规范守护
   if (file_path === `${DOCS_ROOT}/session.md`) {
     await checkSessionMdLimit()
+  }
+
+  // 功能 3: 设计文档自动转换
+  if (isDesignDocCreation(file_path)) {
+    await handleDesignDocCreation(file_path)
   }
 
   return null
@@ -358,5 +549,60 @@ async function checkSessionMdLimit() {
     await archiveSessionMd(lines)
     log(`📦 session.md 已归档（${lines} 行 > ${SESSION_MAX_LINES} 行）`)
   }
+}
+
+async function handleDesignDocCreation(filePath) {
+  // 1. 读取配置
+  const config = readConfig()
+
+  if (!config.auto_convert_designs) {
+    return null  // 配置禁用，不触发
+  }
+
+  // 2. 验证文件
+  if (!fileExists(filePath)) {
+    log('⚠️ 设计文档不存在')
+    return null
+  }
+
+  // 3. 询问用户（可选）
+  if (config.prompt_before_convert) {
+    const basename = path.basename(filePath)
+    const shouldConvert = await askUser(
+      `检测到设计文档: ${basename}\n是否自动生成任务卡片？ (Y/n)`
+    )
+
+    if (!shouldConvert) {
+      log('ℹ️ 用户取消自动转换')
+      log('提示: 使用 /convert-design-to-tasks 手动转换')
+      return null
+    }
+  }
+
+  // 4. 调用转换 Agent
+  try {
+    log('📋 正在分析设计文档...')
+
+    const result = await runAgent('design-to-tasks', {
+      designDoc: filePath,
+      mode: 'auto'
+    })
+
+    if (result.success) {
+      log(`✅ 已创建 ${result.taskCount} 个任务卡片`)
+      log(`任务ID: ${result.taskIds.join(', ')}`)
+    } else {
+      log(`❌ 转换失败: ${result.error}`)
+      if (result.suggestion) {
+        log(`建议: ${result.suggestion}`)
+      }
+    }
+  } catch (error) {
+    log(`❌ Agent 调用失败: ${error.message}`)
+  }
+}
+
+function isDesignDocCreation(filePath) {
+  return filePath.match(/^docs\/plans\/\d{4}-\d{2}-\d{2}-.+-design\.md$/)
 }
 ```

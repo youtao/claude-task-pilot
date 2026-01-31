@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-task-pilot",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "AI-driven task management plugin for Claude Code with automatic tracking and intelligent recommendations",
   "owner": {
     "name": "youtao"
@@ -10,7 +10,7 @@
     {
       "name": "claude-task-pilot",
       "description": "AI-driven task management plugin with automatic tracking and intelligent recommendations",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": {
         "name": "youtao"
       },
