@@ -1,6 +1,14 @@
 ## 项目管理
 
-本项目使用 **Claude Task Pilot** 插件进行任务管理。
+使用 **Claude Task Pilot** 插件。
 
-任务文档位于 `docs/` 目录。继续工作前请查看 `docs/session.md` 了解当前进度。
+### 目录
+- `docs/session.md` - 当前状态
+- `docs/plans/` - 设计文档（brainstorming 输出）
+- `docs/todo/backlog/` - 任务卡片
+- `docs/done/` - 已完成归档
 
+### 工作流
+**设计** → `/brainstorm` 自动生成任务
+**任务** → 创建到 `backlog/` → 完成后移至 `done/YYYY-MM/`
+**推荐** → 说"下一个任务"获取智能推荐

@@ -458,8 +458,8 @@ session_max_lines: 80  # session.md 最大行数
 archive_threshold: 10  # 超过限制后多归档的行数
 
 # 设计文档自动转换
-auto_convert_designs: true
-prompt_before_convert: true
+auto_convert_designs: true        # 启用自动转换（默认）
+prompt_before_convert: false      # 不询问，直接生成（默认）
 design_docs_path: "docs/plans"
 ```
 
