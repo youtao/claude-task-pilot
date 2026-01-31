@@ -107,23 +107,16 @@ allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion", "Glob", "Grep", "Lis
 
 12. **检查并更新 CLAUDE.md**:
     检查项目根目录是否存在 `CLAUDE.md`：
-    - **不存在**: 创建包含 Claude Task Pilot 说明的 CLAUDE.md
-    - **存在**: 在文件顶部添加 Claude Task Pilot 使用说明
+    - **不存在**: 使用 `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.template` 创建
+    - **存在**: 在文件顶部添加简短说明
 
-    CLAUDE.md 中应包含：
+    CLAUDE.md 顶部应包含：
     ```markdown
     ## 项目管理
 
-    本项目使用 **Claude Task Pilot** 插件进行任务管理和追踪。
+    本项目使用 **Claude Task Pilot** 插件进行任务管理。
 
-    - 任务文档位于 `docs/` 目录
-    - 当前状态: `docs/session.md`
-    - 长期规划: `docs/todo/roadmap.md`
-    - 当前冲刺: `docs/todo/current-sprint.md`
-    - 任务卡片: `docs/todo/backlog/`
-    - 已完成: `docs/done/`
-
-    **重要**: 在继续之前的开发工作时，请先查看 `docs/session.md` 了解当前进度。
+    任务文档位于 `docs/` 目录。继续工作前请查看 `docs/session.md` 了解当前进度。
     ```
 
 ## 完成提示
