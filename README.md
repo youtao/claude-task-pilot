@@ -6,45 +6,118 @@
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
+---
+
 ## 🎯 为什么选择 Claude Task Pilot？
 
 Claude Task Pilot 是专为 Claude Code 工作流设计的 AI 原生任务管理系统。与传统任务管理工具不同，它具有以下特点：
 
-- **AI 思维模式**: 文档结构专为 LLM 理解优化
-- **自动工作**: 通过智能 Hooks 零手动追踪
-- **智能推荐**: 基于优先级和依赖关系的任务建议
-- **快速启动**: 5-10 秒了解项目状态
+- **🤖 AI 思维模式**: 文档结构专为 LLM 理解优化
+- **⚡ 零手动操作**: 完全自动的文档同步，无需手动命令
+- **🎯 智能推荐**: 基于优先级和依赖关系的任务建议
+- **🚀 快速启动**: 5-10 秒了解项目状态
+- **🔄 完整追踪**: 从设计到归档的完整生命周期管理
 
 ---
 
-## 🎯 核心功能
+## ✨ 核心功能
 
 ### 1. 自动初始化
-- 检测项目是否已建立任务管理系统
-- 自动创建符合规范的文档结构
-- 生成模板文件
+- ✅ 检测项目是否已建立任务管理系统
+- ✅ 自动创建符合规范的文档结构
+- ✅ 生成模板文件
+- ✅ 支持中途安装插件的项目
 
-### 2. 手动初始化
-- **/setup-task-pilot 命令**：中途安装插件的项目的初始化工具
-- 智能判断：保护现有数据，补充缺失部分
-- 交互模式：对可疑文件询问是否重建
-- 参数支持：auto（自动）/ interactive（交互）
+### 2. 完全自动的文档同步 ⭐ NEW
+- ✅ **自动检测**: 编辑任务卡片后自动检测完成状态
+- ✅ **自动归档**: 添加完成标记后自动归档任务
+- ✅ **自动更新**: 同步更新所有相关文档
+- ✅ **智能模式**: prompt/auto/silent 三种模式可选
+- ✅ **双层保障**: 操作后同步 + 启动时检查
 
-### 3. 任务状态追踪
-- **任务开始**: 检测新任务卡片创建，自动更新状态
-- **任务完成**: 检测任务归档，自动更新索引
-- **规范守护**: 确保 session.md 不超过 80 行
+**工作流程**:
+```bash
+# 1. 编辑任务卡片
+vim docs/todo/backlog/task-001.md
+
+# 2. 添加完成标记
+**完成时间**: 2026-02-01
+
+# 3. 保存文件
+
+# 4. 自动完成！
+🔄 检测到文档不一致，自动同步中...
+✅ 已归档: task-001.md
+✅ 已更新 session.md
+✅ 已更新 current-sprint.md
+```
+
+### 3. 任务管理命令
+
+#### `/complete-task` - 任务完成命令
+标记任务完成并自动更新所有相关文档。
+
+```bash
+/complete-task              # 使用当前任务（从 session.md）
+/complete-task task-001     # 指定任务ID
+/complete-task task-001.md  # 指定文件路径
+```
+
+**自动执行**:
+- ✅ 移动任务卡片到归档目录
+- ✅ 创建完成报告
+- ✅ 更新 session.md
+- ✅ 更新 current-sprint.md
+- ✅ 更新 archive-index.md
+- ✅ 智能推荐下一个任务
+
+#### `/sync-progress` - 文档同步命令
+全面同步所有项目文档，确保数据一致性。
+
+```bash
+/sync-progress          # 快速同步（日常使用）
+/sync-progress full     # 完全同步（每周总结）
+/sync-progress verify   # 验证模式（检查不一致）
+```
+
+**解决的问题**:
+- 手动保存进度时只更新部分文档
+- roadmap.md、done/、backlog/ 未同步
+- 文档状态不一致
+
+#### `/convert-design-to-tasks` - 设计文档转换
+将设计文档自动转换为可执行的任务卡片。
+
+```bash
+/convert-design-to-tasks                                    # 使用最新设计文档
+/convert-design-to-tasks docs/plans/feature-design.md      # 指定文档
+```
+
+**智能生成**:
+- 按模块拆分任务（backend/frontend/testing/doc）
+- 多维度优先级评分（复杂度、依赖、模块关键性、用户价值）
+- 自动识别依赖关系（数据模型→API→前端→测试）
+
+#### `/setup-task-pilot` - 项目初始化
+为中途安装插件的项目初始化文档结构。
+
+```bash
+/setup-task-pilot              # 智能模式（自动判断）
+/setup-task-pilot auto         # 自动模式（少询问）
+/setup-task-pilot interactive  # 交互模式（详细询问）
+```
 
 ### 4. 智能功能
-- **任务推荐**: 基于优先级和依赖关系推荐下一个任务
-- **日报生成**: 自动生成每日进度报告
-- **设计文档转换**: 自动将设计文档转换为可执行任务卡片（NEW）
+- **🎯 任务推荐**: 基于优先级和依赖关系推荐下一个任务
+- **📊 日报生成**: 自动生成每日进度报告
+- **🔄 规范守护**: 确保 session.md 不超过 80 行
+- **🔍 一致性检查**: SessionStart 时自动检测并修复不一致
 
 ### 5. 设计文档转换
-- **自动触发**: 检测设计文档创建，自动生成任务卡片
-- **智能拆分**: 按模块、复杂度自动拆分任务
-- **优先级判断**: 多维度算法自动判断任务优先级
-- **依赖识别**: 自动识别任务间依赖关系
+- **🤖 自动触发**: 检测设计文档创建，自动生成任务卡片
+- **🧠 智能拆分**: 按模块、复杂度自动拆分任务
+- **📊 优先级判断**: 多维度算法自动判断任务优先级
+- **🔗 依赖识别**: 自动识别任务间依赖关系
 
 ---
 
@@ -53,7 +126,7 @@ Claude Task Pilot 是专为 Claude Code 工作流设计的 AI 原生任务管理
 ```
 docs/
 ├── session.md              # 当前 Session 状态（<80 行）
-├── plans/                  # 设计文档目录（NEW）
+├── plans/                  # 设计文档目录
 │   └── YYYY-MM-DD-*-design.md
 ├── todo/
 │   ├── roadmap.md          # 长期路线图（3-6 个月）
@@ -105,7 +178,7 @@ claude-code
 cat > docs/todo/backlog/task-001-hello-world.md << 'EOF'
 # task-001: Hello World
 
-**创建时间**: 2026-01-30
+**创建时间**: 2026-02-01
 **优先级**: P0
 **模块**: test
 
@@ -120,152 +193,146 @@ EOF
 cat docs/session.md
 ```
 
-### 初始化项目
+### 配置自动同步（推荐）
 
-#### 新项目初始化
+在项目根目录创建 `.claude/claude-task-pilot.local.md`：
 
-新项目首次启动时，插件会自动提示初始化：
-
-```markdown
-## 🚀 检测到新项目
-
-此项目尚未建立任务管理系统。是否立即初始化？
-
-**将会创建**:
-- docs/session.md
-- docs/todo/roadmap.md
-- docs/todo/current-sprint.md
-- docs/done/archive-index.md
-- docs/todo/backlog/
-- docs/done/YYYY-MM/
+```yaml
+---
+# 自动文档同步（NEW）
+auto_sync: true                   # 启用自动同步（默认）
+auto_sync_mode: "prompt"          # 同步模式
+                                  # - auto: 完全自动，不询问
+                                  # - prompt: 提示用户（推荐）⭐
+                                  # - silent: 静默修复
+---
 ```
 
-#### 中途安装插件
+**详细配置指南**: [docs/configuration-guide.md](docs/configuration-guide.md)
 
-如果你是在已有项目中中途安装此插件，有两种初始化方式：
+---
 
-**方式 1: 使用斜杠命令（推荐）**
+## 💡 日常使用
+
+### 推荐工作流程（完全自动）
 
 ```bash
-/setup-task-pilot
+# 1. 查看当前任务
+cat docs/session.md
+
+# 2. Claude Code 完成工作
+"请实现用户登录功能"
+
+# 3. 编辑任务卡片，添加完成标记
+vim docs/todo/backlog/task-001.md
+# 添加: **完成时间**: 2026-02-01
+
+# 4. 保存文件
+
+# 5. 自动同步完成！
+🔄 检测到文档不一致，自动同步中...
+✅ 已归档: task-001.md
+✅ 已更新 session.md
+✅ 已更新 current-sprint.md
+✅ 自动同步完成
 ```
 
-可选参数：
-- `auto` - 自动模式（智能判断，少询问）
-- `interactive` - 交互模式（询问每个可能覆盖的文件）
+### 手动命令工作流程
 
-**方式 2: 自然语言触发**
+```bash
+# 1. 查看当前任务
+cat docs/session.md
 
-```
-帮我初始化任务管理结构
-```
+# 2. Claude Code 完成工作
 
-或
+# 3. 标记任务完成
+/complete-task
 
-```
-设置项目结构用于任务追踪
-```
-
-**智能行为**：
-- ✅ 自动创建缺失的目录和文件
-- 🤖 对于已存在但内容很少的文件（< 5 行），询问是否重新生成
-- 🔒 对于内容丰富的文件，自动跳过，保护你的数据
-- 📊 完成后显示详细的初始化报告
-
-**强制模式**：
-```
-强制初始化项目结构，跳过所有确认
+# 4. 查看推荐
+[自动显示下一个任务推荐]
 ```
 
-### 创建任务
+### 定期全面同步
+
+```bash
+# 每周或长时间工作后
+/sync-progress full
+```
+
+---
+
+## 📖 详细使用指南
+
+### 1. 创建任务
 
 在 `docs/todo/backlog/` 创建新任务卡片：
 
 ```markdown
-# task-003: 补充番茄品种数据
+# task-001: 用户登录功能
 
-**创建时间**: 2026-01-30
+**创建时间**: 2026-02-01
 **优先级**: P0
 **模块**: backend
 
 ## 任务描述
-补充 50 个常见番茄品种数据...
+实现用户登录功能，支持邮箱和密码登录。
 
 ## 验收标准
-- [ ] 至少 50 个品种
-- [ ] 每个品种包含完整信息
+- [ ] 登录 API: POST /api/auth/login
+- [ ] 密码加密存储
+- [ ] JWT Token 生成
+- [ ] 单元测试覆盖率 > 80%
 ```
 
 **自动触发**:
 - ✅ 更新 `session.md` "当前任务"
 - ✅ 更新 `current-sprint.md` 状态为 🔄
 
-### 完成任务
+### 2. 完成任务
 
-#### 方式 1: 使用命令（推荐）
-
-使用 `/complete-task` 命令标记任务完成：
+#### 方式 A: 自动同步（推荐）⭐
 
 ```bash
-# 使用当前任务（从 session.md 读取）
-/complete-task
+# 1. 编辑任务卡片
+vim docs/todo/backlog/task-001.md
 
-# 指定任务ID
-/complete-task task-003
+# 2. 添加完成标记
+**完成时间**: 2026-02-01
 
-# 指定文件路径
-/complete-task task-003-tomato-data.md
+# 3. 保存文件，自动完成！
 ```
 
-**自动执行**:
-- ✅ 移动任务卡片到归档目录
-- ✅ 创建完成报告
+#### 方式 B: 使用命令
+
+```bash
+/complete-task task-001
+```
+
+#### 方式 C: 手动移动
+
+```bash
+mv docs/todo/backlog/task-001.md docs/done/2026-02/
+```
+
+**所有方式都会**:
 - ✅ 更新 `session.md` "上一个任务"
 - ✅ 更新 `current-sprint.md` 状态为 ✅
 - ✅ 更新 `archive-index.md`
 - ✅ 智能推荐下一个任务
 
-#### 方式 2: 手动移动文件
+### 3. 同步文档
 
-移动任务卡片到 `docs/done/YYYY-MM/`：
+#### 何时需要同步
 
-```bash
-mv docs/todo/backlog/task-003.md docs/done/2026-01/
-```
+- ✅ 手动保存进度后发现文档不一致
+- ✅ 长时间工作后
+- ✅ 怀疑文档有问题时
 
-**自动触发**:
-- ✅ 创建完成报告
-- ✅ 更新 `session.md` "上一个任务"
-- ✅ 更新 `current-sprint.md` 状态为 ✅
-- ✅ 更新 `archive-index.md`
-- ✅ 智能推荐下一个任务
-
-**推荐**: 使用 `/complete-task` 命令，更方便快捷！
-
-### 同步文档
-
-#### 使用场景
-
-当您手动要求 AI 保存进度时，如果发现只更新了部分文档（如 session.md、current-sprint.md），而其他文档（roadmap.md、done/、backlog/）没有同步更新时，使用 `/sync-progress` 命令。
-
-#### 快速同步（推荐）
+#### 快速同步
 
 ```bash
-# 默认模式：快速同步
 /sync-progress
-
-# 快速模式（相同）
-/sync-progress quick
 ```
-
-**自动执行**:
-- ✅ 更新 `session.md`
-- ✅ 更新 `current-sprint.md`
-- ✅ 检测并归档未归档的完成任务
-- ✅ 修复状态不一致
-- ✅ 生成同步报告
-
-**适用场景**: 日常工作中的快速同步
 
 #### 完全同步
 
@@ -273,135 +340,33 @@ mv docs/todo/backlog/task-003.md docs/done/2026-01/
 /sync-progress full
 ```
 
-**额外执行**:
-- 所有快速同步操作
-- ✅ 更新 `roadmap.md` 进度
-- ✅ 扫描所有任务卡片状态
-- ✅ 重新生成 `archive-index.md`（如果损坏）
-- ✅ 详细的同步报告和进度统计
-
-**适用场景**:
-- 阶段性总结（每周、每月）
-- 长时间工作后
-- 感觉文档不一致时
-
 #### 验证模式
 
 ```bash
 /sync-progress verify
 ```
 
-**行为**:
-- 不修改任何文件
-- 只检查数据一致性
-- 报告发现的问题
-- 提供修复建议
+### 4. 转换设计文档
 
-**适用场景**:
-- 怀疑文档有问题时
-- 定期检查（每周）
-- 同步前的预检查
-
-**推荐**: 每天工作结束时运行 `/sync-progress`，保持文档同步！
-
-### 自动同步（NEW）
-
-#### 启用自动同步
-
-在项目根目录创建 `.claude/claude-task-pilot.local.md`：
-
-```yaml
----
-auto_sync: true                   # 启用自动同步（默认）
-auto_sync_mode: "prompt"          # 同步模式
-                                  # - auto: 完全自动，不询问
-                                  # - prompt: 提示用户（推荐）
-                                  # - silent: 静默修复
----
-```
-
-#### 工作原理
-
-启用自动同步后，插件会在以下情况自动检测并同步文档：
-
-1. **编辑任务卡片** - 添加完成标记时自动归档
-2. **编辑关键文档** - 更新 session.md 时同步其他文档
-3. **执行文件操作** - 移动/删除任务文件时自动更新索引
-
-#### 三种同步模式
-
-**模式 1: prompt（推荐）**
-
-```yaml
-auto_sync_mode: "prompt"
-```
-
-- 检测到问题后询问用户
-- 显示发现的问题
-- 用户确认后才修复
-
-**模式 2: auto（完全自动）**
-
-```yaml
-auto_sync_mode: "auto"
-```
-
-- 检测到问题后自动修复
-- 不询问用户
-- 显示简要结果
-
-**模式 3: silent（静默）**
-
-```yaml
-auto_sync_mode: "silent"
-```
-
-- 只修复明显的问题
-- 不显示任何输出
-- 用户无感知
-
-#### 自动同步示例
+#### 自动转换（推荐）
 
 ```bash
-# 1. 编辑任务卡片
-vim docs/todo/backlog/task-001-feature.md
+# 1. 使用 brainstorming
+/brainstorm
 
-# 添加完成标记
-**完成时间**: 2026-02-01
+# 2. 设计文档创建
+# docs/plans/2026-02-01-user-authentication-design.md
 
-# 2. 保存文件
-
-# 3. 插件自动检测并提示（prompt 模式）
-🔄 检测到文档不一致，自动同步中...
-
-发现以下问题:
-1. task-001-feature.md - 任务已完成但未归档
-
-是否自动修复？ (Y/n) y
-
-✅ 已归档: task-001-feature.md
-✅ 已更新 session.md
-✅ 已更新 current-sprint.md
-
-✅ 自动同步完成
+# 3. 自动生成任务卡片
+📋 正在分析设计文档...
+✅ 已创建 5 个任务卡片
 ```
 
-#### 双层保障
+#### 手动转换
 
-1. **自动同步 Hook** - 操作后立即同步
-2. **SessionStart Hook** - 启动时检查修复
-
-确保文档始终一致，即使自动同步失败。
-
-#### 禁用自动同步
-
-如果需要手动控制，可以禁用：
-
-```yaml
-auto_sync: false
+```bash
+/convert-design-to-tasks
 ```
-
-然后定期手动运行 `/sync-progress`。
 
 ---
 
@@ -413,22 +378,26 @@ auto_sync: false
 
 ```yaml
 ---
+# 基础配置
 docs_root: "docs"
 session_max_lines: 80
 auto_recommend: true
 daily_report: true
 
-# 设计文档自动转换（默认启用，完全自动）
+# 设计文档自动转换
 auto_convert_designs: true        # 启用自动转换
 prompt_before_convert: false      # 不询问，直接生成
 
-# 自动文档同步（NEW）
+# 自动文档同步 ⭐ NEW
 auto_sync: true                   # 启用自动同步（默认）
 auto_sync_mode: "prompt"          # 同步模式
                                   # - auto: 完全自动，不询问
                                   # - prompt: 提示用户（推荐）
                                   # - silent: 静默修复
 auto_sync_threshold: 3            # 问题数量阈值
+auto_sync_exclude:                # 排除的目录
+  - "node_modules/"
+  - ".git/"
 ---
 ```
 
@@ -436,129 +405,7 @@ auto_sync_threshold: 3            # 问题数量阈值
 
 编辑 `~/.claude/plugins/claude-task-pilot/.claude/claude-task-pilot.local.md`
 
----
-
-## 📖 使用指南
-
-### 设计文档转换
-
-将设计文档自动转换为可执行的任务卡片，与 brainstorming workflow 无缝集成。
-
-#### 自动转换
-
-**启用配置**:
-```yaml
-# .claude/claude-task-pilot.local.md
-auto_convert_designs: true        # 启用自动转换
-prompt_before_convert: false      # 不询问，直接生成任务
-```
-
-**使用流程**:
-1. 完成 brainstorming，设计文档创建到 `docs/plans/`
-2. PostToolWrite Hook 自动检测
-3. **自动生成任务卡片**到 `docs/todo/backlog/`（无需确认）
-
-**示例**:
-```bash
-# 1. 使用 brainstorming
-/brainstorm
-
-# 2. 设计文档创建
-# docs/plans/2026-02-01-user-authentication-design.md
-
-# 3. Hook 自动检测并转换
-📋 正在分析设计文档...
-✅ 已创建 5 个任务卡片
-任务ID: task-001, task-002, task-003, task-004, task-005
-```
-
-**可选：如果想启用确认提示**:
-```yaml
-prompt_before_convert: true       # 转换前询问用户
-```
-
-#### 手动转换
-
-```bash
-# 使用最新设计文档
-/convert-design-to-tasks
-
-# 指定设计文档
-/convert-design-to-tasks docs/plans/2026-02-01-user-authentication-design.md
-```
-
-#### 任务生成规则
-
-**按模块拆分**:
-- Backend: 数据模型、API、业务逻辑
-- Frontend: 页面组件、UI 元素、状态管理
-- Infrastructure: 数据库、配置、部署
-- Testing: 单元测试、集成测试、E2E 测试
-- Documentation: API 文档、用户手册
-
-**优先级判断**:
-- P0: ≥70 分（关键路径、基础设施）
-- P1: ≥50 分（主要功能、用户可见）
-- P2: <50 分（辅助功能、文档）
-
-**评分因素**:
-- 复杂度 (30%): 高30/中20/低10
-- 依赖数量 (25%): 无依赖25/少量15/多5
-- 模块关键性 (25%): backend25/infra20/frontend15
-- 用户价值 (20%): 用户直接可见20/间接15/其他10
-
----
-
-### 日常开发流程
-
-### 日常开发流程
-
-1. **启动 Session**: 自动显示当前任务摘要
-2. **开始任务**: 创建任务卡片到 `backlog/`
-3. **完成任务**: 移动任务卡片到 `done/YYYY-MM/`
-4. **查看日报**: 每日首次启动自动生成
-
-### 手动命令
-
-```markdown
-# 初始化或修复项目结构
-/setup-task-pilot              # 智能模式（自动判断）
-/setup-task-pilot auto         # 自动模式（少询问）
-/setup-task-pilot interactive  # 交互模式（详细询问）
-
-# 推荐下一个任务
-说："推荐下一个任务" 或 "接下来做什么"
-→ 调用: task-suggester agent
-
-# 生成日报
-说："生成今日日报" 或 "今日进度"
-→ 调用: daily-reporter agent
-```
-
-#### /setup-task-pilot 命令详解
-
-**用途**：为中途安装插件的项目初始化文档结构，或修复损坏的项目结构
-
-**行为**：
-1. 检查现有目录和文件
-2. 创建缺失的部分（目录和文件）
-3. 对于已存在的文件：
-   - 内容 < 5 行 → 询问是否覆盖（可能是初始化失败）
-   - 内容 ≥ 5 行 → 跳过（保护现有内容）
-4. **询问是否导入当前计划**到 session.md
-5. **自动更新 CLAUDE.md**，添加插件使用说明
-6. 完成后显示详细报告
-
-**新增功能**：
-- ✨ **智能计划导入**：创建文件后询问是否将当前开发计划写入 session.md
-- ✨ **自动配置 CLAUDE.md**：在项目文档中添加 Claude Task Pilot 使用说明
-- 📝 确保 AI 在后续 session 中了解项目任务管理方式
-
-**何时使用**：
-- ✅ 刚安装插件到现有项目
-- ✅ 项目结构损坏需要修复
-- ✅ 想要补充缺失的文件
-- ❌ 不用于全新项目（会自动初始化）
+**优先级**: 项目级配置 > 全局配置 > 默认配置
 
 ---
 
@@ -566,21 +413,23 @@ prompt_before_convert: true       # 转换前询问用户
 
 ### Hooks
 
-- **SessionStart**: 初始化检测 + 摘要显示
+- **SessionStart**: 初始化检测 + 摘要显示 + 未处理任务检测
 - **PreToolWrite**: 任务开始检测
-- **PostToolWrite**: 任务完成 + 规范守护
+- **PostToolWrite**: 任务完成 + Bash 命令检测 + 设计文档转换
+- **Auto-Sync**: 自动文档同步 ⭐ NEW
 
 ### Agents
 
 - **task-suggester**: 智能任务推荐
 - **daily-reporter**: 日报生成
+- **design-to-tasks**: 设计文档转换
 
 ### Commands
 
-- **/setup-task-pilot**: 项目初始化命令
-  - 支持自动/交互模式
-  - 智能判断文件状态
-  - 保护现有数据
+- **/complete-task**: 标记任务完成 ⭐
+- **/sync-progress**: 文档同步 ⭐
+- **/convert-design-to-tasks**: 设计文档转换
+- **/setup-task-pilot**: 项目初始化
 
 ### Templates
 
@@ -589,87 +438,88 @@ prompt_before_convert: true       # 转换前询问用户
 - `current-sprint.md`: 冲刺模板
 - `archive-index.md`: 归档索引模板
 - `task-complete.md`: 完成报告模板
-- `CLAUDE.md.template`: CLAUDE.md 模板（包含插件使用说明）
+- `task-backlog.md`: 任务卡片模板
 
 ---
 
 ## 🎨 设计原则
 
 1. **AI 优先**: 文档结构化、高信息密度
-2. **快速启动**: 新 Session 5-10 秒了解状态
-3. **任务驱动**: 所有开发活动围绕任务卡片
-4. **完整追溯**: 任务生命周期记录完整
-5. **非侵入式**: Hooks 观察，不干扰用户操作
+2. **零手动操作**: 完全自动的文档同步
+3. **快速启动**: 新 Session 5-10 秒了解状态
+4. **任务驱动**: 所有开发活动围绕任务卡片
+5. **完整追溯**: 任务生命周期记录完整
+6. **非侵入式**: Hooks 观察，不干扰用户操作
+
+---
+
+## 🆚 功能对比
+
+### 手动 vs 自动
+
+| 操作 | 手动方式 | 自动方式 ⭐ |
+|------|---------|------------|
+| 完成任务 | /complete-task | 编辑任务卡片 |
+| 同步文档 | /sync-progress | 自动检测 |
+| 归档任务 | mv 命令 | 自动归档 |
+| 更新文档 | 手动更新 | 自动更新 |
+
+### 推荐组合
+
+```bash
+# 日常使用 → 完全自动（auto_sync_mode: "auto"）
+# 编辑任务卡片 → 自动完成
+
+#定期总结 → 手动全面同步
+/sync-progress full
+```
 
 ---
 
 ## 🔧 故障排查
 
-### 项目结构损坏或不完整
+### 自动同步不触发
 
-**症状**：某些文件或目录丢失，插件无法正常工作
-
-**解决方案 1：使用 Skill 修复（推荐）**
-
-```
-帮我修复项目结构
-```
-
-或强制模式：
-
-```
-强制修复项目结构
-```
-
-**解决方案 2：手动重建**
-
+**检查**:
 ```bash
-# 删除损坏的文件
-rm docs/session.md
+# 1. 确认配置
+cat .claude/claude-task-pilot.local.md | grep auto_sync
 
-# 重启 Claude Code，自动重建
-claude-code
+# 2. 应该看到: auto_sync: true
+
+# 3. 重启 Claude Code
 ```
 
-**解决方案 3：从模板复制**
+### 文档不同步
 
+**解决**:
 ```bash
-# 从插件模板复制
-cp ~/.claude/plugins/claude-task-pilot/templates/session.md docs/session.md
-cp ~/.claude/plugins/claude-task-pilot/templates/roadmap.md docs/todo/roadmap.md
-```
+# 1. 验证模式检查
+/sync-progress verify
 
-### 归档索引损坏
-
-```bash
-# 从模板重建
-cp ~/.claude/plugins/claude-task-pilot/templates/archive-index.md \
-   docs/done/archive-index.md
+# 2. 手动全面同步
+/sync-progress full
 ```
 
 ### Hook 未触发
 
+**检查**:
 ```bash
 # 检查插件目录
-ls ~/.claude/plugins/claude-task-pilot
+ls ~/.claude/plugins/claude-task-pilot/hooks/
 
-# 检查 plugin.json 语法
-cat ~/.claude/plugins/claude-task-pilot/.claude-plugin/plugin.json | jq
+# 应该看到:
+# - auto-sync.md
+# - session-start.md
+# - post-tool-write.md
+# - pre-tool-write.md
 ```
-
-### Agent 调用失败
-
-- 检查 Agent 文件是否存在
-- 检查 `plugin.json` 中的 agent 声明
-- 查看 Claude Code 日志
 
 ---
 
 ## 🧪 测试
 
-### 手动测试场景
-
-创建测试项目验证插件功能：
+### 快速测试
 
 ```bash
 # 1. 创建测试项目
@@ -678,22 +528,48 @@ mkdir ~/test-pilot && cd ~/test-pilot
 # 2. 启动 Claude Code
 claude-code
 
-# 3. 验证自动初始化提示
-# 4. 创建任务卡片
-# 5. 移动任务到归档
-# 6. 检查自动更新是否生效
+# 3. 创建任务
+cat > docs/todo/backlog/task-001.md << 'EOF'
+# task-001: 测试
+**创建时间**: 2026-02-01
+**完成时间**: 2026-02-01
+EOF
+
+# 4. 观察是否自动归档
 ```
 
-**测试清单**：
+### 测试清单
+
 - [ ] 新项目自动初始化
-- [ ] 中途安装插件后 /setup-task-pilot 命令正常工作
-- [ ] 智能判断功能：小文件询问，大文件跳过
-- [ ] auto/interactive 模式正常切换
-- [ ] 任务创建后 session.md 自动更新
-- [ ] 任务完成后自动生成报告
-- [ ] 归档索引自动更新
+- [ ] 自动同步功能正常
+- [ ] 任务创建后自动更新 session.md
+- [ ] 任务完成后自动归档
+- [ ] 所有文档自动同步
 - [ ] 智能推荐功能正常
 - [ ] session.md 行数限制生效
+
+---
+
+## 📚 详细文档
+
+### 核心文档
+
+- **[README.md](README.md)** - 本文档
+- **[CLAUDE.md](CLAUDE.md)** - 项目 AI 指导文档
+- **[docs/configuration-guide.md](docs/configuration-guide.md)** - 完整配置指南
+
+### 功能文档
+
+- **[commands/complete-task.md](commands/complete-task.md)** - 任务完成命令
+- **[commands/sync-progress.md](commands/sync-progress.md)** - 文档同步命令
+- **[commands/convert-design-to-tasks.md](commands/convert-design-to-tasks.md)** - 设计文档转换
+- **[hooks/auto-sync.md](hooks/auto-sync.md)** - 自动同步 Hook
+
+### 更新日志
+
+- **[docs/changelog-v1.7.0.md](docs/changelog-v1.7.0.md)** - v1.7.0 更新日志
+- **[docs/changelog-v1.6.0.md](docs/changelog-v1.6.0.md)** - v1.6.0 更新日志
+- **[docs/changelog-v1.5.2.md](docs/changelog-v1.5.2.md)** - v1.5.2 更新日志
 
 ---
 
@@ -706,7 +582,7 @@ claude-code
 1. Fork 本仓库
 2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
 3. 提交更改 (`git commit -m 'Add amazing feature'`)
-4. 推送到分支 (`git push origin feature-amazing-feature`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 开启 Pull Request
 
 ---
@@ -725,17 +601,75 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ---
 
-**最后更新**: 2026-02-01
-**版本**: v1.5.0
-**维护者**: youtao
-
----
-
 ## 📜 更新日志
+
+### v1.7.0 (2026-02-01) - 完全自动的文档同步 ⭐
+
+**新增功能**:
+- ✨ **自动文档同步 Hook** - 完全自动，无需手动命令
+- ✨ 三种同步模式: prompt（推荐）/ auto（完全自动）/ silent（静默）
+- ✨ 智能检测文档不一致并自动修复
+- ✨ 双层保障: 操作后同步 + 启动时检查
+
+**改进内容**:
+1. **零手动操作**:
+   - 编辑任务卡片，添加完成标记
+   - 保存文件，自动完成
+   - 无需运行任何命令
+
+2. **灵活配置**:
+   - `auto_sync`: 启用/禁用自动同步
+   - `auto_sync_mode`: 选择同步模式
+   - `auto_sync_threshold`: 问题数量阈值
+
+3. **完整文档**:
+   - [docs/configuration-guide.md](docs/configuration-guide.md) - 详细配置指南
+   - [hooks/auto-sync.md](hooks/auto-sync.md) - Hook 实现文档
+
+**使用方式**:
+```yaml
+# .claude/claude-task-pilot.local.md
+auto_sync: true
+auto_sync_mode: "prompt"
+```
+
+### v1.6.0 (2026-02-01) - 文档同步命令
+
+**新增功能**:
+- ✨ **/sync-progress 命令** - 全面同步所有项目文档
+- ✨ 三种同步模式: quick/full/verify
+- ✨ 智能问题检测: 未归档任务、状态不一致、缺失索引
+- ✨ 详细的同步报告
+
+**解决问题**:
+- 手动保存进度时只更新部分文档
+- roadmap.md、done/、backlog/ 未同步
+- 文档状态不一致
+
+### v1.5.2 (2026-02-01) - 任务完成命令
+
+**新增功能**:
+- ✨ **/complete-task 命令** - 标记任务完成并更新文档
+- ✨ 支持多种参数格式: 任务ID/文件路径/默认
+- ✨ 自动更新所有相关文档
+- ✨ 智能推荐下一个任务
+
+**改进内容**:
+1. **简化工作流程**:
+   - 不需要手动移动文件
+   - 不需要手动更新多个文档
+   - 一个命令完成所有操作
+
+2. **完整更新**:
+   - 移动任务卡片到归档目录
+   - 更新 session.md
+   - 更新 current-sprint.md
+   - 更新 archive-index.md
+   - 推荐下一个任务
 
 ### v1.5.0 (2026-02-01)
 
-**新增功能**：
+**新增功能**:
 - ✨ 设计文档自动转换（design-to-tasks agent）
 - ✨ 自动检测设计文档创建并生成任务卡片
 - ✨ 手动转换命令 `/convert-design-to-tasks`
@@ -743,106 +677,8 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 - ✨ 优先级自动判断算法
 - ✨ 依赖关系自动识别
 
-**改进内容**：
-1. **与 brainstorming 无缝集成**：
-   - 设计文档创建后自动触发转换
-   - 支持 superpowers:brainstorming 输出
-   - 配置化控制自动/手动模式
+---
 
-2. **智能任务生成**：
-   - 按模块拆分（backend/frontend/testing/doc）
-   - 多维度优先级评分（复杂度、依赖、模块关键性、用户价值）
-   - 自动识别依赖关系（数据模型→API→前端→测试）
-
-3. **灵活配置**：
-   - 支持自动/手动触发
-   - 可配置是否询问用户
-   - 可自定义优先级权重
-
-**使用方式**：
-```bash
-# 自动转换（需启用配置）
-/brainstorm
-# 设计文档创建后自动触发
-
-# 手动转换
-/convert-design-to-tasks
-/convert-design-to-tasks docs/plans/2026-02-01-feature-design.md
-```
-
-### v1.4.0 (2026-01-30)
-
-**新增功能**：
-- ✨ 初始化后询问是否导入当前计划到 session.md
-- ✨ 自动在 CLAUDE.md 中添加插件使用说明
-- 📝 创建 CLAUDE.md.template 模板文件
-
-**改进内容**：
-1. **智能计划导入**：
-   - 创建模板文件后询问用户
-   - 引导提供：当前任务、已完成工作、下一步计划、问题 blockers
-   - 将计划写入 session.md 保持连续性
-
-2. **自动配置 CLAUDE.md**：
-   - 检测并创建/更新 CLAUDE.md
-   - 添加简洁的插件使用说明
-   - 让 AI 在新 session 中了解项目使用 Claude Task Pilot
-
-3. **简化模板**：
-   - CLAUDE.md.template 只包含核心信息
-   - 明确指引 AI 查看 docs/session.md
-
-**用户体验提升**：
-- ✅ 新项目初始化后即可导入当前计划
-- ✅ AI 在后续 session 中自动了解项目背景
-- ✅ 保持任务追踪的连续性
-
-### v1.3.0 (2026-01-30)
-
-**新增功能**：
-- ✨ 添加 `/setup-task-pilot` 斜杠命令，支持直接初始化
-- 🎯 支持 `auto` 和 `interactive` 两种模式
-- 📖 更新 README 文档，添加命令使用说明
-
-**命令参数**：
-- 无参数：智能模式（自动判断文件状态）
-- `auto`：自动模式（智能判断，少询问）
-- `interactive`：交互模式（详细询问每个文件）
-
-### v1.2.1 (2026-01-30)
-
-**测试版本**：
-- 🔧 版本管理流程验证
-
-### v1.2.0 (2026-01-30)
-
-**改进**：
-- 📖 在 CLAUDE.md 添加版本管理章节
-- 📦 建立版本发布流程和检查清单
-- 🔧 规范化版本号同步机制
-
-**文档完善**：
-- 版本管理最佳实践
-- 完整的发布流程
-- 发布前检查清单
-
-### v1.1.0 (2026-01-30)
-
-**新增功能**：
-- ✨ 添加 setup-task-pilot 命令，支持中途安装插件的项目初始化
-- 🤖 智能判断机制：根据文件内容自动决定是否重建
-- 🔒 数据保护：从不删除已有内容，只创建或经确认后覆盖
-- 📊 详细的初始化报告
-
-**改进**：
-- 📖 更新文档，添加命令使用说明
-- 🧪 添加测试场景和清单
-
-### v1.0.0 (2026-01-30)
-
-**初始版本**：
-- ✅ 自动初始化
-- ✅ 任务状态追踪
-- ✅ 智能任务推荐
-- ✅ 日报生成
-- ✅ 规范守护
+**最后更新**: 2026-02-01
+**版本**: v1.7.0
+**维护者**: youtao
