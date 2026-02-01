@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.5.2-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.6.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -241,6 +241,68 @@ mv docs/todo/backlog/task-003.md docs/done/2026-01/
 - ✅ 智能推荐下一个任务
 
 **推荐**: 使用 `/complete-task` 命令，更方便快捷！
+
+### 同步文档
+
+#### 使用场景
+
+当您手动要求 AI 保存进度时，如果发现只更新了部分文档（如 session.md、current-sprint.md），而其他文档（roadmap.md、done/、backlog/）没有同步更新时，使用 `/sync-progress` 命令。
+
+#### 快速同步（推荐）
+
+```bash
+# 默认模式：快速同步
+/sync-progress
+
+# 快速模式（相同）
+/sync-progress quick
+```
+
+**自动执行**:
+- ✅ 更新 `session.md`
+- ✅ 更新 `current-sprint.md`
+- ✅ 检测并归档未归档的完成任务
+- ✅ 修复状态不一致
+- ✅ 生成同步报告
+
+**适用场景**: 日常工作中的快速同步
+
+#### 完全同步
+
+```bash
+/sync-progress full
+```
+
+**额外执行**:
+- 所有快速同步操作
+- ✅ 更新 `roadmap.md` 进度
+- ✅ 扫描所有任务卡片状态
+- ✅ 重新生成 `archive-index.md`（如果损坏）
+- ✅ 详细的同步报告和进度统计
+
+**适用场景**:
+- 阶段性总结（每周、每月）
+- 长时间工作后
+- 感觉文档不一致时
+
+#### 验证模式
+
+```bash
+/sync-progress verify
+```
+
+**行为**:
+- 不修改任何文件
+- 只检查数据一致性
+- 报告发现的问题
+- 提供修复建议
+
+**适用场景**:
+- 怀疑文档有问题时
+- 定期检查（每周）
+- 同步前的预检查
+
+**推荐**: 每天工作结束时运行 `/sync-progress`，保持文档同步！
 
 ---
 
