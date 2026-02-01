@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.5.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.5.2-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -202,6 +202,31 @@ cat docs/session.md
 
 ### 完成任务
 
+#### 方式 1: 使用命令（推荐）
+
+使用 `/complete-task` 命令标记任务完成：
+
+```bash
+# 使用当前任务（从 session.md 读取）
+/complete-task
+
+# 指定任务ID
+/complete-task task-003
+
+# 指定文件路径
+/complete-task task-003-tomato-data.md
+```
+
+**自动执行**:
+- ✅ 移动任务卡片到归档目录
+- ✅ 创建完成报告
+- ✅ 更新 `session.md` "上一个任务"
+- ✅ 更新 `current-sprint.md` 状态为 ✅
+- ✅ 更新 `archive-index.md`
+- ✅ 智能推荐下一个任务
+
+#### 方式 2: 手动移动文件
+
 移动任务卡片到 `docs/done/YYYY-MM/`：
 
 ```bash
@@ -214,6 +239,8 @@ mv docs/todo/backlog/task-003.md docs/done/2026-01/
 - ✅ 更新 `current-sprint.md` 状态为 ✅
 - ✅ 更新 `archive-index.md`
 - ✅ 智能推荐下一个任务
+
+**推荐**: 使用 `/complete-task` 命令，更方便快捷！
 
 ---
 

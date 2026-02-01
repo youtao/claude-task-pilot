@@ -1,6 +1,6 @@
 ---
 when: PostToolWrite
-ifTool: Write|Edit|mcp__plugin_serena_serena__replace_content
+ifTool: Write|Edit|mcp__plugin_serena_serena__replace_content|Bash
 ---
 
 # PostToolWrite Hook - 任务完成与规范守护
@@ -12,13 +12,77 @@ ifTool: Write|Edit|mcp__plugin_serena_serena__replace_content
 2. **文档规范守护**: 确保 session.md 不超过行数限制
 3. **设计文档自动转换**: 检测设计文档创建，自动生成任务卡片
 
+## 监听工具说明
+
+- **Write/Edit/replace_content**: 文件写入操作
+- **Bash**: Shell 命令执行（用于检测 `mv` 等文件移动命令）
+
 ---
 
 ## 功能 1: 任务完成检测
 
 ### 检测方式
 
-#### 方式 A: 文件移动（主要方式）
+#### 方式 A: 文件写入操作
+
+**检测逻辑**:
+```javascript
+// 检测到从 backlog/ 移动到 done/YYYY-MM/
+if (sourcePath.match(/todo\/backlog\/task-\d{3}-[\w-]+\.md$/) &&
+    targetPath.match(/done\/\d{4}-\d{2}\/.+/)) {
+  return { action: "TASK_COMPLETED", taskId, sourcePath, targetPath }
+}
+```
+
+**触发条件**:
+- 源文件: `docs/todo/backlog/task-XXX-*.md`
+- 目标文件: `docs/done/YYYY-MM/*.md`
+
+#### 方式 B: Bash 命令移动（新增）
+
+**检测逻辑**:
+```javascript
+// 检测 Bash 命令中的文件移动操作
+if (toolName === "Bash") {
+  const command = toolArgs.command
+
+  // 匹配 mv 命令移动任务卡片
+  const mvPattern = /mv\s+['"]?([^'"]+task-\d{3}-[\w-]+\.md)['"]?\s+['"]?([^'"]+done\/\d{4}-\d{2}\/)/
+  const match = command.match(mvPattern)
+
+  if (match) {
+    const sourcePath = match[1].replace(/^['"]|['"]$/g, '')
+    const targetPath = match[2].replace(/^['"]|['"]$/g, '')
+
+    // 标准化路径
+    if (!sourcePath.startsWith('docs/')) {
+      sourcePath = `docs/${sourcePath}`
+    }
+    if (!targetPath.startsWith('docs/')) {
+      targetPath = `docs/${targetPath}`
+    }
+
+    return { action: "TASK_COMPLETED", sourcePath, targetPath, tool: "Bash" }
+  }
+}
+```
+
+**支持的命令格式**:
+```bash
+# 格式 1: 直接路径
+mv docs/todo/backlog/task-001-feature.md docs/done/2026-02/
+
+# 格式 2: 引号包裹
+mv "docs/todo/backlog/task-001-feature.md" "docs/done/2026-02/"
+
+# 格式 3: 相对路径
+mv docs/todo/backlog/task-001-feature.md docs/done/2026-02/
+
+# 格式 4: Git mv
+git mv docs/todo/backlog/task-001-feature.md docs/done/2026-02/
+```
+
+#### 方式 C: 状态标记（辅助方式）
 
 **检测逻辑**:
 ```javascript
@@ -500,11 +564,12 @@ design_docs_path: "docs/plans"
 
 ```javascript
 async function onPostToolWrite(toolArgs) {
-  const { file_path, result } = toolArgs
+  const { file_path, result, tool } = toolArgs
 
   // 功能 1: 任务完成检测
-  if (isTaskCompletion(file_path)) {
-    await handleTaskCompletion(file_path)
+  const completionInfo = detectTaskCompletion(toolArgs)
+  if (completionInfo) {
+    await handleTaskCompletion(completionInfo)
   }
 
   // 功能 2: 文档规范守护
@@ -518,6 +583,75 @@ async function onPostToolWrite(toolArgs) {
   }
 
   return null
+}
+
+function detectTaskCompletion(toolArgs) {
+  const { tool, file_path, command } = toolArgs
+
+  // 检测方式 1: 文件写入操作
+  if ((tool === "Write" || tool === "Edit" || tool === "mcp__plugin_serena_serena__replace_content") &&
+      file_path) {
+    if (isTaskCompletionByFileWrite(file_path)) {
+      return extractTaskInfoFromFile(file_path)
+    }
+  }
+
+  // 检测方式 2: Bash 命令移动
+  if (tool === "Bash" && command) {
+    const mvInfo = parseMvCommand(command)
+    if (mvInfo) {
+      return mvInfo
+    }
+  }
+
+  return null
+}
+
+function parseMvCommand(command) {
+  // 匹配 mv/git mv 命令
+  const patterns = [
+    // 标准格式: mv source target
+    /(?:git\s+mv|mv)\s+(['"]?)([^'"]+task-\d{3}-[\w-]+\.md)\1\s+(['"]?)([^'"]+done\/\d{4}-\d{2}\/(?:[^'"]+\/?))?\3/,
+    // 简化格式: mv task-XXX.md done/
+    /(?:git\s+mv|mv)\s+(task-\d{3}-[\w-]+\.md)\s+(done\/\d{4}-\d{2}\/?)/
+  ]
+
+  for (const pattern of patterns) {
+    const match = command.match(pattern)
+    if (match) {
+      let sourcePath = match[2]
+      let targetDir = match[4]
+
+      // 标准化路径
+      if (!sourcePath.startsWith('docs/')) {
+        sourcePath = `docs/todo/backlog/${sourcePath}`
+      }
+      if (!targetDir.startsWith('docs/')) {
+        targetDir = `docs/${targetDir}`
+      }
+
+      // 提取文件名
+      const fileName = sourcePath.split('/').pop()
+      const targetPath = targetDir.endsWith('/')
+        ? `${targetDir}${fileName}`
+        : `${targetDir}/${fileName}`
+
+      return {
+        action: "TASK_COMPLETED",
+        sourcePath,
+        targetPath,
+        tool: "Bash",
+        taskId: extractTaskIdFromPath(sourcePath)
+      }
+    }
+  }
+
+  return null
+}
+
+function extractTaskIdFromPath(path) {
+  const match = path.match(/task-(\d{3})-[\w-]+\.md/)
+  return match ? `task-${match[1]}` : null
 }
 
 async function handleTaskCompletion(filePath) {
