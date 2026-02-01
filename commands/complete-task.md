@@ -235,6 +235,68 @@ await fs.unlink(taskPath)
 console.log(`✅ 任务已归档: ${archivePath}`)
 ```
 
+### 步骤 6.5: 归档设计文档（NEW）
+
+```javascript
+// 检查任务卡片是否关联设计文档
+const designDocMatch = content.match(/\*\*相关设计\*\*:\s*(.+?)(?:\n|$)/) ||
+                        content.match(/相关设计[:\s]+([^\n]+)/)
+
+if (designDocMatch) {
+  let designDocPath = designDocMatch[1].trim()
+
+  // 标准化路径
+  if (!designDocPath.startsWith('docs/')) {
+    designDocPath = `docs/${designDocPath}`
+  }
+
+  // 检查设计文档是否存在
+  if (await fs.exists(designDocPath)) {
+    console.log(`📋 发现关联的设计文档: ${designDocPath}`)
+
+    // 使用与任务相同的归档目录
+    const currentMonth = new Date().toISOString().slice(0, 7)
+    const archiveDir = `docs/done/${currentMonth}`
+    await fs.mkdir(archiveDir, { recursive: true })
+
+    // 提取设计文档文件名
+    const designFileName = path.basename(designDocPath)
+    const completedDesignPath = `${archiveDir}/${designFileName}`
+
+    // 读取设计文档内容
+    let designContent = await readFile(designDocPath, 'utf-8')
+
+    // 添加完成标记
+    const completionDate = new Date().toISOString().slice(0, 10)
+    const completionTime = new Date().toLocaleString('zh-CN')
+
+    if (!designContent.includes('**完成状态**')) {
+      // 在文档开头添加完成状态
+      designContent = `---
+**完成状态**: ✅ 已完成
+**完成时间**: ${completionDate}
+**关联任务**: ${taskId}
+**完成时间戳**: ${completionTime}
+---
+
+${designContent}`
+    }
+
+    // 写入到归档目录
+    await writeFile(completedDesignPath, designContent, 'utf-8')
+
+    // 删除原始设计文档
+    await fs.unlink(designDocPath)
+
+    console.log(`✅ 设计文档已归档: ${completedDesignPath}`)
+  } else {
+    console.log(`⚠️ 设计文档不存在: ${designDocPath}`)
+  }
+} else {
+  console.log(`ℹ️ 任务未关联设计文档`)
+}
+```
+
 ### 步骤 7: 更新文档
 
 #### 7.1 更新 session.md

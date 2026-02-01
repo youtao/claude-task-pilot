@@ -151,6 +151,63 @@ if (issues.some(i => i.type === 'TASK_COMPLETED_NOT_ARCHIVED')) {
   console.log('✅ 已更新 current-sprint.md')
 }
 
+// 4. 归档相关的设计文档（NEW）
+for (const issue of issues) {
+  if (issue.type === 'TASK_COMPLETED_NOT_ARCHIVED') {
+    const sourcePath = issue.file
+    const content = await readFile(sourcePath, 'utf-8')
+
+    // 检查是否关联设计文档
+    const designDocMatch = content.match(/\*\*相关设计\*\*:\s*(.+?)(?:\n|$)/) ||
+                            content.match(/相关设计[:\s]+([^\n]+)/)
+
+    if (designDocMatch) {
+      let designDocPath = designDocMatch[1].trim()
+
+      // 标准化路径
+      if (!designDocPath.startsWith('docs/')) {
+        designDocPath = `docs/${designDocPath}`
+      }
+
+      // 检查设计文档是否存在
+      if (await fs.exists(designDocPath)) {
+        // 使用与任务相同的归档目录
+        const currentMonth = new Date().toISOString().slice(0, 7)
+        const archiveDir = `docs/done/${currentMonth}`
+        await fs.mkdir(archiveDir, { recursive: true })
+
+        const designFileName = path.basename(designDocPath)
+        const completedDesignPath = `${archiveDir}/${designFileName}`
+
+        // 读取设计文档内容
+        let designContent = await readFile(designDocPath, 'utf-8')
+
+        // 添加完成标记
+        const completionDate = new Date().toISOString().slice(0, 10)
+        const taskId = extractTaskIdFromPath(sourcePath)
+
+        if (!designContent.includes('**完成状态**')) {
+          designContent = `---
+**完成状态**: ✅ 已完成
+**完成时间**: ${completionDate}
+**关联任务**: ${taskId}
+---
+
+${designContent}`
+        }
+
+        // 写入到归档目录
+        await writeFile(completedDesignPath, designContent, 'utf-8')
+
+        // 删除原始设计文档
+        await fs.unlink(designDocPath)
+
+        console.log(`✅ 设计文档已归档: ${designFileName}`)
+      }
+    }
+  }
+}
+
 console.log('\n✅ 自动同步完成')
 ```
 

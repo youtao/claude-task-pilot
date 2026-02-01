@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-1.7.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-1.8.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -28,10 +28,11 @@ Claude Task Pilot 是专为 Claude Code 工作流设计的 AI 原生任务管理
 - ✅ 生成模板文件
 - ✅ 支持中途安装插件的项目
 
-### 2. 完全自动的文档同步 ⭐ NEW
+### 2. 完全自动的文档同步 ⭐
 - ✅ **自动检测**: 编辑任务卡片后自动检测完成状态
 - ✅ **自动归档**: 添加完成标记后自动归档任务
 - ✅ **自动更新**: 同步更新所有相关文档
+- ✅ **设计文档归档**: 自动归档关联的设计文档 ⭐ NEW
 - ✅ **智能模式**: prompt/auto/silent 三种模式可选
 - ✅ **双层保障**: 操作后同步 + 启动时检查
 
@@ -133,10 +134,11 @@ docs/
 │   ├── current-sprint.md   # 当前冲刺（1-2 周）
 │   └── backlog/            # 任务卡片
 │       └── task-XXX-*.md
-└── done/                   # 已完成任务归档
+└── done/                   # 已完成任务和设计归档 ⭐
     ├── archive-index.md    # 归档索引
     └── YYYY-MM/            # 按月归档
-        └── task-XXX-*.md
+        ├── task-XXX-*.md   # 已完成任务
+        └── *-design.md     # 已完成设计 ⭐ NEW
 ```
 
 ---
@@ -319,6 +321,13 @@ mv docs/todo/backlog/task-001.md docs/done/2026-02/
 - ✅ 更新 `current-sprint.md` 状态为 ✅
 - ✅ 更新 `archive-index.md`
 - ✅ 智能推荐下一个任务
+- ✅ **自动归档关联的设计文档** ⭐ NEW
+
+**设计文档自动归档**:
+如果任务卡片关联了设计文档（通过 `**相关设计**: docs/plans/xxx-design.md` 字段），任务完成后：
+- 设计文档自动移动到 `docs/done/YYYY-MM/`
+- 添加完成状态和关联任务信息
+- 与任务卡片一起归档，保持追溯性
 
 ### 3. 同步文档
 
@@ -603,6 +612,35 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 📜 更新日志
 
+### v1.8.0 (2026-02-01) - 设计文档自动归档 ⭐ NEW
+
+**新增功能**:
+- ✨ **设计文档自动归档** - 任务完成后自动归档关联的设计文档
+- ✨ 与任务卡片一起归档到 `docs/done/YYYY-MM/`
+- ✨ 添加完成状态和关联任务信息
+- ✨ 完整的设计到实现追溯链
+
+**改进内容**:
+1. **自动归档设计文档**:
+   - 任务完成后，检查是否关联设计文档
+   - 自动移动到 `docs/done/YYYY-MM/`
+   - 添加完成标记：完成状态、完成时间、关联任务
+   - 与任务卡片保持在一起，便于追溯
+
+2. **完整的追溯链**:
+   - 设计文档 → 任务卡片 → 完成
+   - 所有相关文件在同一归档目录
+   - 设计和实现一一对应
+
+**使用方式**:
+```yaml
+# 任务卡片中添加设计文档关联
+**相关设计**: docs/plans/2026-02-01-feature-design.md
+
+# 任务完成后，自动归档设计文档到
+# docs/done/2026-02/2026-02-01-feature-design.md
+```
+
 ### v1.7.0 (2026-02-01) - 完全自动的文档同步 ⭐
 
 **新增功能**:
@@ -680,5 +718,5 @@ auto_sync_mode: "prompt"
 ---
 
 **最后更新**: 2026-02-01
-**版本**: v1.7.0
+**版本**: v1.8.0
 **维护者**: youtao
