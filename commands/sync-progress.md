@@ -1,19 +1,25 @@
 ---
-description: 全面同步所有项目文档，确保数据一致性
-argument-hint: 同步模式（可选：quick/full/verify）
+description: 全面同步所有项目文档，支持完成任务和转换设计文档
+argument-hint: [quick|full|verify] [--complete-task <id>] [--convert-design [path]]
 allowed-tools:
   - Read
   - Write
   - Edit
   - Glob
   - AskUserQuestion
+  - Task
 ---
 
 # Sync Progress - 文档同步命令
 
 ## 功能描述
 
-全面同步所有项目文档，确保数据一致性。解决"手动保存进度时只更新部分文档"的问题。
+全面同步所有项目文档，确保数据一致性。支持任务完成、设计文档转换和多种同步模式。
+
+**核心功能**：
+- 📊 **进度同步**：保持所有文档数据一致
+- ✅ **任务完成**：标记任务完成并自动归档
+- 🔄 **设计转换**：将设计文档转换为任务卡片
 
 **同步的文档**：
 - ✅ `session.md` - 当前 Session 状态
@@ -80,6 +86,80 @@ allowed-tools:
 - 怀疑文档有问题时
 - 定期检查（每周）
 - 同步前的预检查
+
+### 选项 1: 完成任务
+
+```bash
+/sync-progress --complete-task [task-id]
+/sync-progress -c [task-id]
+```
+
+**功能**：标记任务完成并归档。
+
+**参数**：
+- `task-id`：任务ID（如：task-001）或文件名（如：task-001-feature.md）
+- 未提供参数：从 session.md 读取当前任务
+
+**行为**：
+- 添加完成时间到任务卡片
+- 移动到归档目录（`docs/done/YYYY-MM/`）
+- 更新 `session.md`（当前任务 → 上一个任务）
+- 更新 `current-sprint.md`（状态 → ✅）
+- 更新 `archive-index.md`（添加归档记录）
+- 自动归档关联的设计文档（如果存在）
+- 调用 task-suggester agent 推荐下一个任务
+
+**适用场景**：
+- 任务完成后立即归档
+- 需要同步更新所有相关文档
+- 希望获得下一个任务推荐
+
+### 选项 2: 转换设计文档
+
+```bash
+/sync-progress --convert-design [design-doc-path]
+/sync-progress -d [design-doc-path]
+```
+
+**功能**：将设计文档转换为任务卡片。
+
+**参数**：
+- `design-doc-path`：设计文档路径（可选）
+- 未提供参数：自动使用最新的设计文档（`docs/plans/*-design.md`）
+
+**行为**：
+- 分析设计文档内容
+- 生成任务卡片到 `docs/todo/backlog/`
+- 更新 `current-sprint.md`
+- 可与同步模式组合使用
+
+**适用场景**：
+- 完成 brainstorming 后生成任务
+- 需要将设计文档转化为可执行任务
+- 快速启动新功能开发
+
+### 选项 3: 组合操作
+
+```bash
+# 转换设计文档后立即完全同步
+/sync-progress --convert-design --full
+
+# 完成任务后立即同步
+/sync-progress --complete-task task-001 --full
+
+# 转换设计文档并验证结果
+/sync-progress -d docs/plans/design.md --verify
+```
+
+**说明**：选项可以与同步模式组合使用，实现一键完成多个操作。
+
+### 选项 4: 帮助信息
+
+```bash
+/sync-progress --help
+```
+
+显示所有可用参数和使用示例。
 
 ---
 
@@ -343,7 +423,363 @@ if (mode === 'full') {
 }
 ```
 
-### 步骤 6: 生成同步报告
+### 步骤 6.5: 完成任务流程（当使用 --complete-task 时）
+
+#### 6.5.1 确定任务
+
+```javascript
+let taskPath = null
+
+// 如果未提供参数
+if (!ARGUMENTS.includes('--complete-task') && !ARGUMENTS.includes('-c')) {
+  // 跳过任务完成流程
+  return
+}
+
+const taskArg = ARGUMENTS.match(/(?:--complete-task|-c)\s+(\S+)/)?.[1]
+
+if (!taskArg) {
+  // 从 session.md 读取当前任务
+  const sessionContent = await readFile('docs/session.md', 'utf-8')
+  const match = sessionContent.match(/\[([^\]]+task-\d{3}-[\w-]+\.md)\]/)
+
+  if (!match) {
+    console.log('⚠️ 未找到当前任务，请提供任务ID')
+    return
+  }
+
+  taskPath = match[1]
+  console.log(`从 session.md 读取当前任务: ${taskPath}`)
+} else {
+  // 使用提供的参数
+  const input = taskArg.trim()
+
+  if (input.match(/^task-\d{3}$/)) {
+    // 任务ID: task-001
+    const files = await glob(`docs/todo/backlog/${input}-*.md`)
+    if (files.length === 0) {
+      console.log(`❌ 未找到任务: ${input}`)
+      return
+    }
+    taskPath = files[0]
+  } else if (input.match(/^task-\d{3}-[\w-]+\.md$/)) {
+    // 文件名: task-001-feature.md
+    taskPath = `docs/todo/backlog/${input}`
+  } else if (input.endsWith('.md')) {
+    // 完整路径或相对路径
+    taskPath = input.startsWith('docs/') ? input : `docs/${input}`
+  }
+}
+```
+
+#### 6.5.2 读取任务信息
+
+```javascript
+const content = await readFile(taskPath, 'utf-8')
+
+// 提取任务信息
+const taskId = content.match(/^# (task-\d{3}:)/)?.[1] ||
+               path.basename(taskPath).match(/^(task-\d{3})/)?.[1]
+
+const taskName = content.match(/^# task-\d{3}: (.+)/)?.[1] ||
+                  path.basename(taskPath).replace('.md', '')
+
+const priority = content.match(/\*\*优先级\*\*:\s*(P[0-2])/)?.[1] || 'P1'
+const module = content.match(/\*\*模块\*\*:\s*(\w+)/)?.[1] || '未分类'
+
+// 读取创建时间
+const createdDate = content.match(/\*\*创建时间\*\*:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ||
+                     new Date().toISOString().slice(0, 10)
+
+console.log(`\n📋 任务信息`)
+console.log(`ID: ${taskId}`)
+console.log(`名称: ${taskName}`)
+console.log(`优先级: ${priority}`)
+console.log(`模块: ${module}`)
+```
+
+#### 6.5.3 准备归档
+
+```javascript
+// 确定归档目录（使用创建时间的月份）
+const currentMonth = new Date().toISOString().slice(0, 7)
+const archiveDir = `docs/done/${currentMonth}`
+
+await fs.mkdir(archiveDir, { recursive: true })
+
+const fileName = path.basename(taskPath)
+const archivePath = `${archiveDir}/${fileName}`
+
+// 添加完成时间
+const completionDate = new Date().toISOString().slice(0, 10)
+const completionTime = new Date().toLocaleString('zh-CN')
+
+let updatedContent = content
+
+if (!updatedContent.includes('**完成时间**')) {
+  updatedContent = updatedContent.replace(
+    /(\*\*创建时间\*\*:\s*\d{4}-\d{2}-\d{2})/,
+    `$1\n**完成时间**: ${completionDate}`
+  )
+}
+```
+
+#### 6.5.4 归档任务和设计文档
+
+```javascript
+// 写入归档文件
+await writeFile(archivePath, updatedContent, 'utf-8')
+
+// 删除原文件
+await fs.unlink(taskPath)
+
+console.log(`✅ 任务已归档: ${archivePath}`)
+
+// 检查并归档关联的设计文档
+const designDocMatch = content.match(/\*\*相关设计\*\*:\s*(.+?)(?:\n|$)/) ||
+                        content.match(/相关设计[:\s]+([^\n]+)/)
+
+if (designDocMatch) {
+  let designDocPath = designDocMatch[1].trim()
+
+  if (!designDocPath.startsWith('docs/')) {
+    designDocPath = `docs/${designDocPath}`
+  }
+
+  if (await fs.exists(designDocPath)) {
+    console.log(`📋 发现关联的设计文档: ${designDocPath}`)
+
+    const designFileName = path.basename(designDocPath)
+    const completedDesignPath = `${archiveDir}/${designFileName}`
+
+    let designContent = await readFile(designDocPath, 'utf-8')
+
+    if (!designContent.includes('**完成状态**')) {
+      designContent = `---
+**完成状态**: ✅ 已完成
+**完成时间**: ${completionDate}
+**关联任务**: ${taskId}
+**完成时间戳**: ${completionTime}
+---
+
+${designContent}`
+    }
+
+    await writeFile(completedDesignPath, designContent, 'utf-8')
+    await fs.unlink(designDocPath)
+
+    console.log(`✅ 设计文档已归档: ${completedDesignPath}`)
+  }
+}
+```
+
+#### 6.5.5 更新文档
+
+```javascript
+// 更新 session.md
+const sessionPath = 'docs/session.md'
+let sessionContent = await readFile(sessionPath, 'utf-8')
+
+sessionContent = sessionContent.replace(
+  /## 🎯 当前任务\n+[\s\S]*?(?=\n## |\n---|$)/,
+  '## 🎯 当前任务\n\n暂无'
+)
+
+const previousTaskEntry = `| ${taskId} | ${taskName} | ${completionDate} | ${archivePath} |`
+
+if (sessionContent.includes('## ⏳ 上一个任务')) {
+  sessionContent = sessionContent.replace(
+    /(\|--------\|[\s\S]*?)(\n## |\n---|$)/,
+    `$1${previousTaskEntry}$2`
+  )
+} else {
+  const previousTasksHeader = '## ⏳ 上一个任务\n\n| 任务ID | 描述 | 完成时间 | 归档位置 |\n|--------|------|----------|----------|\n'
+  sessionContent = sessionContent.replace(
+    /## 🎯 当前任务/,
+    `${previousTasksHeader}${previousTaskEntry}\n\n## 🎯 当前任务`
+  )
+}
+
+await writeFile(sessionPath, sessionContent, 'utf-8')
+console.log('✅ 已更新 session.md')
+
+// 更新 current-sprint.md
+const sprintPath = 'docs/todo/current-sprint.md'
+let sprintContent = await readFile(sprintPath, 'utf-8')
+
+sprintContent = sprintContent.replace(
+  new RegExp(`\\|\\s*${taskId}\\s*\\|[^\\n]+\\|\\s*[🔄⏳]\\s*`, 'g'),
+  (match) => match.replace(/[🔄⏳]/, '✅').replace(/进行中|待开始/, '完成')
+)
+
+await writeFile(sprintPath, sprintContent, 'utf-8')
+console.log('✅ 已更新 current-sprint.md')
+
+// 更新 archive-index.md
+const indexPath = 'docs/done/archive-index.md'
+let indexContent = await readFile(indexPath, 'utf-8')
+
+const archiveEntry = `| ${completionDate} | ${taskId}: ${taskName} | ${taskName} | ${fileName} |`
+
+const monthPattern = new RegExp(`###\\s+${currentMonth}`)
+
+if (monthPattern.test(indexContent)) {
+  const tablePattern = new RegExp(`(###\\s+${currentMonth}[\\s\\S]*?\\|--------[\\s\\S]*?)(\\n###|\\n---|$)`)
+  indexContent = indexContent.replace(tablePattern, `$1${archiveEntry}$2`)
+} else {
+  const newMonthTable = `
+### ${currentMonth}
+
+| 完成日期 | 任务 | 描述 | 归档文件 |
+|---------|------|------|---------|
+${archiveEntry}
+`
+
+  const firstMonthMatch = indexContent.match(/\n### \d{4}-\d{2}/)
+
+  if (firstMonthMatch) {
+    indexContent = indexContent.replace(/(\n### \d{4}-\d{2})/, `${newMonthTable}$1`)
+  } else {
+    indexContent = `${newMonthTable}\n${indexContent}`
+  }
+}
+
+await writeFile(indexPath, indexContent, 'utf-8')
+console.log('✅ 已更新 archive-index.md')
+```
+
+#### 6.5.6 推荐下一个任务
+
+```javascript
+console.log('\n正在分析推荐下一个任务...\n')
+
+// 调用 task-suggester agent
+const result = await runAgent('task-suggester', {
+  context: {
+    completedTasks: [taskId],
+    currentProject: {
+      name: path.basename(process.cwd()),
+      docsRoot: 'docs'
+    }
+  }
+})
+
+console.log('✅ 任务完成流程结束\n')
+```
+
+### 步骤 6.6: 转换设计文档流程（当使用 --convert-design 时）
+
+#### 6.6.1 确定设计文档
+
+```javascript
+if (!ARGUMENTS.includes('--convert-design') && !ARGUMENTS.includes('-d')) {
+  // 跳过设计文档转换流程
+  return
+}
+
+let designDoc = null
+const designArg = ARGUMENTS.match(/(?:--convert-design|-d)(?:\s+(\S+))?/)?.[1]
+
+if (!designArg) {
+  // 自动查找最新设计文档
+  const designDocs = await glob('docs/plans/*-design.md')
+
+  if (designDocs.length === 0) {
+    console.log('❌ 未找到设计文档')
+    console.log('期望路径: docs/plans/YYYY-MM-DD-<topic>-design.md')
+    return
+  }
+
+  designDocs.sort((a, b) => {
+    const statA = await fs.stat(a)
+    const statB = await fs.stat(b)
+    return statB.mtime - statA.mtime
+  })
+
+  designDoc = designDocs[0]
+  console.log(`使用最新设计文档: ${designDoc}`)
+} else {
+  // 使用提供的路径
+  designDoc = designArg
+
+  if (!designDoc.startsWith('/') && !designDoc.match(/^[A-Z]:/i)) {
+    designDoc = path.join(process.cwd(), designDoc)
+  }
+}
+```
+
+#### 6.6.2 验证设计文档
+
+```javascript
+// 检查文件是否存在
+try {
+  await fs.access(designDoc)
+} catch {
+  console.log(`❌ 设计文档不存在: ${designDoc}`)
+  return
+}
+
+// 检查文件格式
+if (!designDoc.endsWith('.md')) {
+  console.log('❌ 文件格式不支持，设计文档必须是 Markdown 格式（.md）')
+  return
+}
+
+// 读取并验证内容
+const content = await readFile(designDoc, 'utf-8')
+
+if (!content || content.trim().length < 50) {
+  console.log('❌ 设计文档内容为空或过于简单')
+  console.log('请完善设计文档内容，至少包含功能描述和技术方案')
+  return
+}
+
+const basename = path.basename(designDoc)
+console.log(`\n📋 分析设计文档: ${basename}`)
+console.log(`路径: ${designDoc}`)
+console.log(`大小: ${content.length} 字符\n`)
+```
+
+#### 6.6.3 调用 Design-to-Tasks Agent
+
+```javascript
+console.log('准备将设计文档转换为任务卡片...')
+console.log('任务将创建到: docs/todo/backlog/\n')
+
+const confirm = await askUser('是否继续？ (Y/n)', { default: true })
+
+if (!confirm) {
+  console.log('❌ 用户取消操作')
+  return
+}
+
+// 调用 agent 执行转换
+const result = await runAgent('design-to-tasks', {
+  designDoc: designDoc,
+  mode: 'manual',
+  verbose: true
+})
+
+if (result.success) {
+  console.log('\n' + '='.repeat(60))
+  console.log('✅ 转换完成！')
+  console.log('='.repeat(60))
+
+  console.log(`\n生成任务: ${result.taskCount} 个`)
+  console.log(`任务ID: ${result.taskIds.join(', ')}`)
+
+  console.log('\n下一步:')
+  console.log(`1. 查看任务列表: cat docs/todo/current-sprint.md`)
+  console.log(`2. 开始任务: cat docs/todo/backlog/${result.firstTask}.md`)
+} else {
+  console.log('\n❌ 转换失败')
+  console.log(`错误: ${result.error}`)
+}
+
+console.log('✅ 设计文档转换流程结束\n')
+```
+
+### 步骤 7: 生成同步报告
 
 ```javascript
 console.log('\n' + '='.repeat(60))
@@ -503,6 +939,101 @@ return {
 建议: 运行 /sync-progress 修复
 ```
 
+### 示例 4: 完成任务
+
+```bash
+/sync-progress --complete-task task-001
+```
+
+**输出**:
+```markdown
+📋 任务信息
+ID: task-001
+名称: 实现用户登录功能
+优先级: P0
+模块: backend
+创建时间: 2026-02-01
+
+准备标记任务为完成...
+将执行以下操作:
+1. 移动任务卡片到归档目录
+2. 创建完成报告
+3. 更新 session.md
+4. 更新 current-sprint.md
+5. 更新 archive-index.md
+6. 推荐下一个任务
+
+确认完成此任务？ (Y/n) y
+
+✅ 任务已归档: docs/done/2026-02/task-001-feature.md
+✅ 已更新 session.md
+✅ 已更新 current-sprint.md
+✅ 已更新 archive-index.md
+
+正在分析推荐下一个任务...
+
+[task-suggester 输出推荐...]
+```
+
+### 示例 5: 转换设计文档
+
+```bash
+/sync-progress --convert-design
+```
+
+**输出**:
+```markdown
+查找最新设计文档...
+
+找到: docs/plans/2026-02-01-user-authentication-design.md
+修改时间: 2026-02-01 10:30:00
+
+📋 分析设计文档: 2026-02-01-user-authentication-design.md
+路径: docs/plans/2026-02-01-user-authentication-design.md
+大小: 3520 字符
+
+准备将设计文档转换为任务卡片...
+任务将创建到: docs/todo/backlog/
+
+是否继续？ (Y/n) y
+
+[调用 agent 转换...]
+
+============================================================
+✅ 转换完成！
+============================================================
+
+生成任务: 5 个
+任务ID: task-001, task-002, task-003, task-004, task-005
+
+下一步:
+1. 查看任务列表: cat docs/todo/current-sprint.md
+2. 开始任务: cat docs/todo/backlog/task-001-design-user-data-model.md
+```
+
+### 示例 6: 组合操作
+
+```bash
+/sync-progress --complete-task task-001 --full
+```
+
+**输出**:
+```markdown
+📋 任务信息
+ID: task-001
+...
+
+✅ 任务已归档: docs/done/2026-02/task-001-feature.md
+✅ 已更新 session.md
+✅ 已更新 current-sprint.md
+✅ 已更新 archive-index.md
+
+📊 开始完全同步...
+
+✅ 已更新 roadmap.md
+✅ 总进度: 75%
+```
+
 ---
 
 ## 错误处理
@@ -552,27 +1083,44 @@ return {
 
 ---
 
-## 与其他命令的配合
+## 相关命令
 
-### `/complete-task` vs `/sync-progress`
+### `/setup-task-pilot`
+初始化项目结构，创建必要的文档目录。
 
-| 特性 | /complete-task | /sync-progress |
-|------|---------------|----------------|
-| 用途 | 标记单个任务完成 | 全面同步所有文档 |
-| 更新范围 | 部分文档 | 所有文档 |
-| 归档任务 | 是 | 是（full 模式） |
-| 检测问题 | 否 | 是 |
-| 推荐任务 | 是 | 否 |
-
-**推荐工作流程**：
+**用法**：
 ```bash
-# 1. 完成单个任务
-/complete-task
+/setup-task-pilot
+```
 
-# 2. 完成多个任务后，全面同步
+**适用场景**：
+- 新项目首次使用
+- 文档结构损坏时重建
+
+---
+
+## 推荐工作流程
+
+```bash
+# 1. 初始化项目（首次使用）
+/setup-task-pilot
+
+# 2. 转换设计文档为新任务
+/sync-progress --convert-design
+
+# 3. 开始执行任务...
+# （工作过程中）
+
+# 4. 完成任务
+/sync-progress --complete-task task-001
+
+# 5. 定期同步进度
+/sync-progress
+
+# 6. 每周完全同步
 /sync-progress full
 
-# 3. 定期检查（每周）
+# 7. 定期验证数据一致性
 /sync-progress verify
 ```
 
@@ -642,11 +1190,9 @@ claude-code /sync-progress quick
 
 ## 相关命令
 
-- `/complete-task` - 标记任务完成
-- `/convert-design-to-tasks` - 将设计文档转换为任务卡片
 - `/setup-task-pilot` - 初始化项目结构
 
 ---
 
-**版本**: 1.0.0
-**最后更新**: 2026-02-01
+**版本**: 2.0.0
+**最后更新**: 2026-02-04
