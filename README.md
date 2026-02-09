@@ -2,7 +2,7 @@
 
 **AI 驱动的 Claude Code 任务管理插件**
 
-[![版本](https://img.shields.io/badge/版本-2.0.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
+[![版本](https://img.shields.io/badge/版本-2.1.0-blue.svg)](https://github.com/youtao/claude-task-pilot)
 [![许可证](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-插件-purple.svg)](https://github.com/anthropics/claude-code)
 
@@ -399,8 +399,30 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 - ✨ 优先级自动判断算法
 - ✨ 依赖关系自动识别
 
+### v2.1.0 (2026-02-09) - OMC 计划文件支持 ⭐
+
+**新增功能**：
+- ✅ 支持 oh-my-claudecode (OMC) 计划文件转换
+- ✅ 新增 `omc-plan-to-tasks` agent
+- ✅ 自动识别 Superpowers 和 OMC 计划类型
+- ✅ 扩展 `--convert-design` 支持两种计划格式
+
+**改进**：
+- 📝 大幅精简 `sync-progress.md` 文档（32KB → 8KB）
+- 🎯 优化扫描逻辑，同时支持 `docs/plans/` 和 `.omc/plans/`
+- 🔧 智能 agent 路由（根据计划类型自动选择）
+
+**使用方法**：
+```bash
+# 转换 OMC 计划
+/sync-progress --convert-design
+
+# 自动识别计划类型
+支持: Superpowers (docs/plans/) 和 OMC (.omc/plans/)
+```
+
 ---
 
-**最后更新**: 2026-02-05
-**版本**: v2.0.0
+**最后更新**: 2026-02-09
+**版本**: v2.1.0
 **维护者**: youtao
