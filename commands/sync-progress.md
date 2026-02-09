@@ -1,6 +1,6 @@
 ---
 description: 全面同步所有项目文档，支持完成任务和转换设计文档
-argument-hint: [quick|full|verify] [--complete-task <id>] [--convert-design [path]]
+argument-hint: "[quick|full|verify] [--complete-task <id>] [--convert-design [path]]"
 allowed-tools:
   - Read
   - Write
