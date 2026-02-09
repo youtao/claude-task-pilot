@@ -140,7 +140,9 @@ allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion", "Glob", "Grep", "Lis
 3. 在 docs/todo/current-sprint.md 中定义当前冲刺
 4. 创建任务卡片到 docs/todo/backlog/
 
-💡 提示：现在可以让 AI 帮助你整理当前的开发计划并写入 session.md
+💡 提示：
+- 现在可以让 AI 帮助你整理当前的开发计划并写入 session.md
+- 使用 OMC 的 /plan 生成计划后，可通过 /sync-progress --convert-design 转换为任务
 ```
 
 ---
