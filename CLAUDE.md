@@ -205,6 +205,51 @@ docs/
 
 ---
 
+## 📦 版本管理规范
+
+**⚠️ 重要**: 每次发布新版本时，必须同步更新以下位置的版本号：
+
+### 必须更新的文件
+
+1. **`.claude-plugin/plugin.json`** - 第 4 行
+   ```json
+   "version": "x.x.x"
+   ```
+
+2. **`.claude-plugin/marketplace.json`** - 两处版本号
+   ```json
+   "version": "x.x.x",           // 第 3 行
+   ...
+   "version": "x.x.x"            // plugins[0].version (第 12 行)
+   ```
+
+3. **`README.md`** - 版本徽章和更新日志
+   ```markdown
+   ![版本](https://img.shields.io/badge/版本-x.x.x-blue.svg)
+   ...
+   ### v2.1.0 (2026-02-09) - 描述
+   ```
+
+### 版本号检查清单
+
+发布前确认：
+- [ ] plugin.json 版本号已更新
+- [ ] marketplace.json 两处版本号已更新
+- [ ] README.md 版本徽章已更新
+- [ ] Git tag 已创建 (`git tag -a vx.x.x -m "Release notes"`)
+- [ ] CHANGELOG 或更新日志已更新
+
+### 版本号规范
+
+遵循 **语义化版本 (Semantic Versioning)**：
+
+- **MAJOR.MINOR.PATCH** (例如：2.1.0)
+  - **MAJOR**: 重大功能变更或破坏性更新
+  - **MINOR**: 新增功能（向后兼容）
+  - **PATCH**: Bug 修复或小改进
+
+---
+
 ## 📄 许可证
 
 MIT License - 详见 [LICENSE](LICENSE) 文件
