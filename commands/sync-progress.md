@@ -10,201 +10,134 @@ allowed-tools:
   - Task
 ---
 
-# Sync Progress - 文档同步命令
+# Sync Progress
 
-## 功能描述
+## 功能
 
-全面同步所有项目文档，确保数据一致性。支持任务完成、设计文档转换和多种同步模式。
+全面同步项目文档，确保数据一致性。支持任务完成、设计文档转换。
 
-**核心功能**：
-- 📊 **进度同步**：保持所有文档数据一致
-- ✅ **任务完成**：标记任务完成并自动归档
-- 🔄 **设计转换**：将设计文档转换为任务卡片（支持 Superpowers 和 OMC）
+**核心功能**:
+- 📊 **进度同步**: 保持所有文档数据一致
+- ✅ **任务完成**: 标记任务完成并自动归档
+- 🔄 **设计转换**: 将计划文档转换为任务卡片（Superpowers + OMC）
 
-**同步的文档**：
-- ✅ `session.md` - 当前 Session 状态
-- ✅ `current-sprint.md` - 当前冲刺进度
-- ✅ `roadmap.md` - 长期路线图进度
-- ✅ `backlog/` - 任务卡片状态
-- ✅ `archive-index.md` - 归档索引
-
----
+**同步文档**:
+- `session.md` - Session 状态
+- `current-sprint.md` - 冲刺进度
+- `roadmap.md` - 路线图
+- `backlog/` - 任务卡片
+- `archive-index.md` - 归档索引
 
 ## 参数说明
 
-**$ARGUMENTS**: 同步模式和选项
+| 模式 | 说明 |
+|------|------|
+| **quick**（默认） | 同步 session.md + current-sprint.md，检测并归档完成任务 |
+| **full** | 执行所有 quick 操作 + 更新 roadmap.md + 重建 archive-index.md |
+| **verify** | 只检查数据一致性，不修改文件 |
 
-### 模式
-
-**quick**（快速同步，默认）：
-- 同步 session.md 和 current-sprint.md
-- 检测并归档明显的完成任务
-- 快速验证数据一致性
-
-**full**（完全同步）：
-- 执行所有快速同步操作
-- 更新 roadmap.md 进度
-- 扫描所有任务卡片，更新状态
-- 重新生成 archive-index.md
-- 详细的同步报告
-
-**verify**（验证模式）：
-- 不修改任何文件
-- 只检查数据一致性
-- 报告发现的问题
-- 提供修复建议
-
-### 选项
-
-**--complete-task <id>** 或 **-c <id>**：
-- 标记任务完成并归档
-- 参数：任务ID（如：task-001）或文件名
-- 未提供参数：从 session.md 读取当前任务
-- 自动调用 task-suggester 推荐下一个任务
-
-**--convert-design [path]** 或 **-d [path]**：
-- 将计划文档转换为任务卡片
-- 参数：计划文档路径（可选）
-- 未提供参数：自动查找最新的计划文件
-- 支持的类型：
-  - **Superpowers**: `docs/plans/*.md`
-  - **OMC**: `.omc/plans/*.md`
-- 自动识别计划类型并调用对应的转换 agent
-
-**组合使用**：
-```bash
-/sync-progress --convert-design --full
-/sync-progress --complete-task task-001 --full
-/sync-progress -d docs/plans/design.md --verify
-```
-
----
+| 选项 | 说明 |
+|------|------|
+| `--complete-task <id>` | 标记任务完成并归档，推荐下一个任务 |
+| `--convert-design [path]` | 转换计划文档为任务，支持 `docs/plans/*.md` (Superpowers) 和 `.omc/plans/*.md` (OMC) |
 
 ## 执行流程
 
-### 步骤 1: 读取项目状态
+### 1. 读取状态
 
-读取关键文档：
-- `docs/session.md` - 当前任务状态
-- `docs/todo/current-sprint.md` - 当前冲刺任务列表
-- `docs/todo/roadmap.md` - 长期路线图
-- `docs/done/archive-index.md` - 归档索引
-- `docs/todo/backlog/task-*.md` - 任务卡片
+```javascript
+const docs = {
+  session: read('docs/session.md'),
+  currentSprint: read('docs/todo/current-sprint.md'),
+  roadmap: read('docs/todo/roadmap.md'),
+  archiveIndex: read('docs/done/archive-index.md'),
+  tasks: glob('docs/todo/backlog/task-*.md')
+}
+```
 
-### 步骤 2: 检测不一致
+### 2. 检测不一致
 
-检查项目：
-- backlog 中已完成的任务（未归档）
-- current-sprint.md 状态不一致
-- archive-index.md 缺失记录
+```javascript
+const issues = {
+  completedNotArchived: tasks.filter(t => t.completed && !archived),
+  statusMismatch: compareSprintVsTasks(docs.currentSprint, tasks),
+  missingArchive: checkArchiveIndex(docs.archiveIndex, tasks)
+}
+```
 
-### 步骤 3: 确认同步
+### 3. 执行同步
 
-（full 模式或发现问题时）提示用户确认
+**quick/full**:
+```javascript
+if (mode === 'quick' || mode === 'full') {
+  updateSession()
+  updateCurrentSprint()
+  if (mode === 'full') {
+    archiveCompletedTasks()
+    regenerateArchiveIndex()
+    updateRoadmap()
+  }
+}
+```
 
-### 步骤 4: 执行同步
+**verify**:
+```javascript
+if (mode === 'verify') {
+  reportIssues(issues)
+  suggestFixes(issues)
+}
+```
 
-**quick/full**：
-- 更新 session.md（当前任务、最近完成）
-- 更新 current-sprint.md（同步任务状态）
-- 归档未归档的完成任务（full）
-- 更新 archive-index.md（full）
-- 更新 roadmap.md 进度（full）
+### 4. 完成任务（--complete-task）
 
-### 步骤 5: 完成任务（--complete-task）
+```javascript
+completeTask(taskId) {
+  addCompletionTime(taskId)
+  moveToArchive(taskId)
+  updateSession()
+  updateCurrentSprint()
+  updateArchiveIndex()
+  archiveRelatedDesign(taskId)
+  return suggestNextTask()
+}
+```
 
-- 添加完成时间到任务卡片
-- 移动到归档目录（`docs/done/YYYY-MM/`）
-- 更新 session.md、current-sprint.md、archive-index.md
-- 自动归档关联的设计文档
-- 调用 task-suggester 推荐下一个任务
+### 5. 转换计划（--convert-design）
 
-### 步骤 6: 转换计划文档（--convert-design）
+```javascript
+convertDesign(path) {
+  // 扫描并选择最新计划
+  const plans = scanPlans(['docs/plans/*.md', '.omc/plans/*.md'])
+  const plan = path || selectLatest(plans)
 
-**扫描计划文件**：
-- 扫描 `docs/plans/*.md`（Superpowers）
-- 扫描 `.omc/plans/*.md`（OMC）
-- 按修改时间选择最新计划
-- 自动识别计划类型
+  // 识别类型并调用对应 agent
+  const type = detectPlanType(plan)  // 'superpowers' | 'omc'
+  const agent = type === 'omc' ? 'omc-plan-to-tasks' : 'design-to-tasks'
 
-**调用转换 agent**：
-- Superpowers → `design-to-tasks` agent
-- OMC → `omc-plan-to-tasks` agent
-- 生成任务到 `docs/todo/backlog/`
-- 更新 `current-sprint.md`
-- 归档已处理的计划文件
+  // 生成任务
+  const tasks = await Task(agent, { planPath: plan })
+  writeTasks(tasks)
+  updateCurrentSprint(tasks)
+  archivePlan(plan)
+}
+```
 
----
-
-## 核心示例
-
-### 示例 1: 快速同步（推荐日常使用）
+## 使用示例
 
 ```bash
+# 快速同步（日常）
 /sync-progress
-```
 
-自动同步 session.md 和 current-sprint.md，检测并修复数据不一致。
-
-### 示例 2: 完成任务
-
-```bash
-/sync-progress --complete-task task-001
-```
-
-标记任务完成，归档任务，自动推荐下一个任务。
-
-### 示例 3: 转换 OMC 计划
-
-```bash
-/sync-progress --convert-design
-```
-
-自动查找最新计划文件（支持 Superpowers 和 OMC），转换为任务卡片。
-
-**输出示例**：
-```markdown
-找到 OMC 计划:
-路径: .omc/plans/omc-integration.md
-
-调用 omc-plan-to-tasks agent...
-
-生成任务: 6 个
-任务ID: task-001, task-002, ...
-计划类型: OMC
-```
-
----
-
-## 推荐工作流程
-
-```bash
-# 1. 初始化项目（首次使用）
-/setup-task-pilot
-
-# 2. 生成 OMC 计划后转换为任务
-/plan "实现新功能"
-/sync-progress --convert-design
-
-# 3. 执行任务...
-
-# 4. 完成任务
-/sync-progress --complete-task task-001
-
-# 5. 定期完全同步
+# 完全同步（每周）
 /sync-progress full
 
-# 6. 定期验证
-/sync-progress verify
+# 完成任务
+/sync-progress --complete-task task-001
+
+# 转换设计文档
+/sync-progress --convert-design
+
+# 组合使用
+/sync-progress --complete-task task-001 full
+/sync-progress -d .omc/plans/plan.md
 ```
-
----
-
-## 相关命令
-
-- `/setup-task-pilot` - 初始化项目结构
-
----
-
-**版本**: 2.1.0
-**最后更新**: 2026-02-09
