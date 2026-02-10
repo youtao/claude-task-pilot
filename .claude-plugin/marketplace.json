@@ -1,6 +1,6 @@
 {
   "name": "ctp",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "AI-driven task management plugin for Claude Code with manual commands and intelligent recommendations",
   "owner": {
     "name": "youtao"
@@ -9,7 +9,7 @@
     {
       "name": "claude-task-pilot",
       "description": "AI-driven task management plugin with manual commands and intelligent recommendations",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "author": {
         "name": "youtao"
       },
