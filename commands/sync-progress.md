@@ -67,7 +67,7 @@ allowed-tools:
 - 参数：计划文档路径（可选）
 - 未提供参数：自动查找最新的计划文件
 - 支持的类型：
-  - **Superpowers**: `docs/plans/YYYY-MM-DD-*-design.md`
+  - **Superpowers**: `docs/plans/*.md`
   - **OMC**: `.omc/plans/*.md`
 - 自动识别计划类型并调用对应的转换 agent
 
@@ -122,7 +122,7 @@ allowed-tools:
 ### 步骤 6: 转换计划文档（--convert-design）
 
 **扫描计划文件**：
-- 扫描 `docs/plans/*-design.md`（Superpowers）
+- 扫描 `docs/plans/*.md`（Superpowers）
 - 扫描 `.omc/plans/*.md`（OMC）
 - 按修改时间选择最新计划
 - 自动识别计划类型

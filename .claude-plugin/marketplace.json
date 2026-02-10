@@ -1,5 +1,5 @@
 {
-  "name": "youtao-claude-plugins",
+  "name": "ctp",
   "version": "2.1.0",
   "description": "AI-driven task management plugin for Claude Code with manual commands and intelligent recommendations",
   "owner": {
